@@ -4,11 +4,11 @@ import type { PageServerLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params }) => {
-  const res = await getArticle(params.articleId);
+  const readResult = await getArticle(params.title);
 
-  if (!res.ok) {
-    error(404, "No such article!");
+  if (readResult.ok) {
+    return parse(readResult.content);
   }
 
-  return parse(res.content);
+  return error(500, readResult.error);
 };

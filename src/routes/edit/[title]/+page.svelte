@@ -7,6 +7,7 @@
   import cx from "$lib/utils/cx";
   import type { PageProps } from "./$types";
   import RenameModal from "./RenameModal.svelte";
+  import { afterNavigate } from "$app/navigation";
 
   let { data: article }: PageProps = $props();
 
@@ -15,9 +16,14 @@
   let base = $state(article);
   let value = $state(article.source);
 
+  afterNavigate(() => {
+    base = article
+    value = article.source
+  })
+
   let { article: preview, errors: parsingErrors } = $derived.by(() => {
     try {
-      const article = parse(value);
+      const article = parse(value, "/edit/");
       return { article, errors: [] as ParserError[] };
     } catch (err) {
       return {

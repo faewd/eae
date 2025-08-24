@@ -3,7 +3,7 @@ import pluginFrontMatter from "markdown-it-front-matter";
 import { alert as pluginAlert } from "@mdit/plugin-alert";
 import * as yaml from "yaml";
 import type { Article, ArticleMetadata, Link } from "./types";
-import { pluginWikilinks } from "./wikilinks";
+import { pluginWikilinks, type Options as WikilinkOptions } from "./wikilinks";
 
 export type Span = { offset: number; length: number };
 
@@ -16,13 +16,16 @@ export class ParserError extends Error {
   }
 }
 
-export function parse(source: string): Article {
+export function parse(source: string, wikilinkPrefix = "/article/"): Article {
   const links: Link[] = [];
 
   const md = markdownIt()
     .use(pluginFrontMatter, () => {})
     .use(pluginAlert)
-    .use(pluginWikilinks, { wikilinkCollector: (link) => links.push(link) });
+    .use(pluginWikilinks, {
+      collector: (link) => links.push(link),
+      prefix: wikilinkPrefix,
+    } satisfies WikilinkOptions);
 
   const tokens = md.parse(source, {});
   const frontmatter = tokens.find((token) => token.type === "front_matter" && token.meta);

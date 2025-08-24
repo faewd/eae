@@ -8,7 +8,7 @@ function getFilePath(name: string) {
   return join(basePath, "articles", encodeURIComponent(name) + ".md");
 }
 
-type DBResult =
+export type DBResult =
   | {
       ok: false;
       error: string;

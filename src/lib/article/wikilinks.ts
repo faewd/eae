@@ -9,20 +9,22 @@ const MATCH_PATTERN = /\[\[(?<title>[^[\]|]+)(?:\|(?<label>[^[\]]+))?\]\]/g;
 const TOKEN_NAME = "wikilink";
 const LINK_CLASS = "text-ice-300 no-underline hover:underline hover:text-ice-200";
 
-interface Options {
+export interface Options {
   tokenName?: string;
   linkClass?: string;
-  wikilinkCollector?: (link: Link) => void;
+  prefix: string;
+  collector: (link: Link) => void;
 }
 
-type ResolvedOptions = Pick<Options, "wikilinkCollector"> &
-  Required<Omit<Options, "wikilinkCollector">>;
+type ResolvedOptions = Required<Options>;
 
 export const pluginWikilinks: PluginWithOptions<Options> = (mdIt, options) => {
   const opts = Object.assign(
     {
       tokenName: TOKEN_NAME,
       linkClass: LINK_CLASS,
+      prefix: "/article/",
+      collector: () => {},
     },
     options ?? {},
   );
@@ -65,7 +67,6 @@ const coreRule: (opts: ResolvedOptions) => RuleCore = (opts) => (state) => {
           return newToken;
         });
       state.tokens[i].children?.splice(j, 1, ...newTokens);
-      console.log(state.tokens[i].children?.map((t) => t.content));
     }
   }
 };
@@ -73,6 +74,6 @@ const coreRule: (opts: ResolvedOptions) => RuleCore = (opts) => (state) => {
 const renderer: (opts: ResolvedOptions) => Renderer.RenderRule = (opts) => (tokens, idx) => {
   const title = tokens[idx].attrGet("title")!;
   const label = tokens[idx].attrGet("label") ?? title;
-  opts.wikilinkCollector?.({ title, label });
-  return `<a href="/article/${title}" class="${opts.linkClass}">${label}</a>`;
+  opts.collector({ title, label });
+  return `<a href="${opts.prefix}${title}" class="${opts.linkClass}">${label}</a>`;
 };

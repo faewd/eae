@@ -11,7 +11,7 @@ export async function connect(): Promise<Driver> {
   const PASS = process.env.NEO4J_USERNAME ?? "password";
   const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASS));
   const serverInfo = await driver.getServerInfo();
-  console.log(`Connected to Neo4j:\n${serverInfo}`);
+  console.log(`Connected to ${serverInfo.agent} on ${serverInfo.address}`);
   _driver = driver;
   return driver;
 }
@@ -21,31 +21,44 @@ async function ensureDriver(): Promise<Driver> {
   return await connect();
 }
 
-export async function mergeArticle(article: Article): Promise<N4jResult> {
+export async function mergeIntoGraph(article: Article, oldName?: string): Promise<N4jResult> {
   try {
     const driver = await ensureDriver();
 
     await driver.executeQuery(
-      `
-        MERGE (a:Article {title: $article.title})
+      `//cypher
+        MERGE (a:Article {title: $title})
         ON CREATE SET a = $article
         ON MATCH SET a += $article
 
         WITH 0 as dummy
 
-        MATCH (:Article {title: $article.title})-[r:LINKS_TO]->(:Article)
+        MATCH (a:Article {title: $article.title})-[r:LINKS_TO]->(:Article)
         DELETE r
 
         WITH 0 as dummy
 
-        MATCH (a:Article { title: $article.title })
+        MATCH (a:Article) WHERE a.content IS NULL
+        DELETE a
+      `,
+      {
+        title: oldName ?? article.title,
+        article: { title: article.title, content: article.content },
+        links: article.links,
+      },
+      { database: "neo4j" },
+    );
+
+    await driver.executeQuery(
+      `//cypher
+        MATCH (a:Article {title: $article.title})
         WITH a
-        UNWIND $links as link
-        MERGE (a)-[:LINKS_TO { label: link.label }]->(b:Article { title: link.title })
+        UNWIND $article.links as link
+        MERGE (b:Article {title: link.title})
+        MERGE (a)-[:LINKS_TO { label: link.label }]->(b)
         RETURN a;
       `,
-      { article: { title: article.title, content: article.content }, links: article.links },
-      { database: "neo4j" },
+      { article },
     );
     return { ok: true };
   } catch (err) {

@@ -14,13 +14,12 @@
 
 <article
   class={cx(
-    "prose w-full max-w-full bg-zinc-900 p-4 prose-zinc prose-invert prose-headings:font-heading prose-headings:text-ice-300 prose-h2:border-b-2 prose-h2:border-b-ice-900",
+    "prose w-full max-w-full bg-zinc-900 p-4 prose-zinc prose-invert prose-headings:font-heading prose-headings:text-ice-300 prose-h2:border-b-2 prose-h2:border-b-ice-800",
     props.class,
   )}
 >
   <!-- eslint-disable-next-line svelte/no-at-html-tags -->
   {@html article.content}
-  <hr />
   <h2>Metadata</h2>
   <code><pre>{JSON.stringify(article.metadata, null, 2)}</pre></code>
 </article>
@@ -36,6 +35,11 @@
           display: none;
           content: "";
         }
+      }
+
+      & :where(hr) {
+        border-color: var(--color-ice-800);
+        border-top-width: 2px;
       }
 
       & :global(.markdown-alert) {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import ArticleView from "$lib/components/ArticleView.svelte";
-  import type { PageProps } from "../$types";
+  import type { PageProps } from "./$types";
 
   let { data: article }: PageProps = $props();
 </script>
@@ -10,5 +10,5 @@
 </svelte:head>
 
 <main class="flex justify-center">
-  <ArticleView {article} class="max-w-[75ch]" />
+  <ArticleView {article} class="max-w-[75ch]" searchbar />
 </main>

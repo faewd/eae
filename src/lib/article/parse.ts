@@ -30,7 +30,7 @@ export function parse(source: string, wikilinkPrefix = "/article/"): Article {
   const tokens = md.parse(source, {});
   const frontmatter = tokens.find((token) => token.type === "front_matter" && token.meta);
   const metadata = parseFrontmatter(frontmatter?.meta);
-  const content = md.render(source);
+  const content = md.render(source).replace(/<h1>[^<]+<\/h1>/g, "");
   const title = extractTitle(source);
   return { title, metadata, links, content, source };
 }

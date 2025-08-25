@@ -3,13 +3,15 @@
   import cx from "$lib/utils/cx";
   import type { ClassValue } from "clsx";
   import "@mdit/plugin-alert/style";
+  import SearchBar from "./SearchBar.svelte";
 
   interface Props {
     article: Article;
+    searchbar?: boolean;
     class?: ClassValue;
   }
 
-  let { article, ...props }: Props = $props();
+  let { article, searchbar, ...props }: Props = $props();
 </script>
 
 <article
@@ -18,6 +20,12 @@
     props.class,
   )}
 >
+  <header class="flex items-start justify-between gap-4">
+    <h1>{article.title}</h1>
+    {#if searchbar}
+      <SearchBar class="max-w-1/2" />
+    {/if}
+  </header>
   <!-- eslint-disable-next-line svelte/no-at-html-tags -->
   {@html article.content}
   <h2>Metadata</h2>

@@ -75,5 +75,5 @@ const renderer: (opts: ResolvedOptions) => Renderer.RenderRule = (opts) => (toke
   const title = tokens[idx].attrGet("title")!;
   const label = tokens[idx].attrGet("label") ?? title;
   opts.collector({ title, label });
-  return `<a href="${opts.prefix}${title}" class="${opts.linkClass}">${label}</a>`;
+  return `<a target="_self" href="${opts.prefix}${title}" class="${opts.linkClass}">${label}</a>`;
 };

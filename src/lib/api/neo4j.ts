@@ -89,3 +89,17 @@ export async function mergeIntoGraph(article: Article, oldName?: string): Promis
     session.close();
   }
 }
+
+export async function searchArticles(query: string): Promise<{ title: string }[]> {
+  const driver = await ensureDriver();
+  const { records } = await driver.executeQuery(
+    `//cypher
+    CALL db.index.fulltext.queryNodes("article_text_idx", $query) YIELD node
+    RETURN node.title as title
+  `,
+    { query },
+  );
+  return records.map((record) => ({
+    title: record.get("title"),
+  }));
+}

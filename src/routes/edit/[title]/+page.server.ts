@@ -26,6 +26,6 @@ function makeDefaultArticle(title: string) {
   # ${title}
 
   > [!tip]
-  > This article is an automatically generated stub stub. Go to the [editor](/edit/${encodeURIComponent(title)}) to add content.
+  > This article is an automatically generated stub. Go to the [editor](/edit/${encodeURIComponent(title)}) to add content.
   `);
 }

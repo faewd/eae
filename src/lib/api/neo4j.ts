@@ -21,50 +21,71 @@ async function ensureDriver(): Promise<Driver> {
   return await connect();
 }
 
-export async function mergeIntoGraph(article: Article, oldName?: string): Promise<N4jResult> {
+export async function init() {
+  const driver = await ensureDriver();
+  const session = driver.session({ database: "neo4j" });
   try {
-    const driver = await ensureDriver();
+    await session.executeWrite(async (tx) => {
+      await tx.run(`//cypher
+        CREATE INDEX article_title_idx IF NOT EXISTS FOR (a:Article) ON (a.title)
+      `);
+      await tx.run(`//cypher
+        CREATE FULLTEXT INDEX article_text_idx IF NOT EXISTS FOR (a:Article) ON EACH [a.title, a.content]
+      `);
+    });
+  } finally {
+    session.close();
+  }
+}
 
-    await driver.executeQuery(
-      `//cypher
-        MERGE (a:Article {title: $title})
-        ON CREATE SET a = $article
-        ON MATCH SET a += $article
+export async function mergeIntoGraph(article: Article, oldName?: string): Promise<N4jResult> {
+  const driver = await ensureDriver();
+  const session = driver.session({ database: "neo4j" });
+  try {
+    await session.executeWrite(async (tx) => {
+      await tx.run(
+        `//cypher
+          MERGE (a:Article {title: $title})
+          ON CREATE SET a = $article
+          ON MATCH SET a += $article
 
-        WITH 0 as dummy
+          WITH 0 as dummy
 
-        MATCH (a:Article {title: $article.title})-[r:LINKS_TO]->(:Article)
-        DELETE r
+          MATCH (a:Article {title: $article.title})-[r:LINKS_TO]->(:Article)
+          DELETE r
 
-        WITH 0 as dummy
+          WITH 0 as dummy
 
-        MATCH (a:Article) WHERE a.content IS NULL
-        DELETE a
-      `,
-      {
-        title: oldName ?? article.title,
-        article: { title: article.title, content: article.content },
-        links: article.links,
-      },
-      { database: "neo4j" },
-    );
+          MATCH (a:Article) WHERE a.content IS NULL AND NOT (a)<-[:LINKS_TO]-()
+          DELETE a
+        `,
+        {
+          title: oldName ?? article.title,
+          article: { title: article.title, content: article.content },
+          links: article.links,
+        },
+      );
 
-    await driver.executeQuery(
-      `//cypher
-        MATCH (a:Article {title: $article.title})
-        WITH a
-        UNWIND $article.links as link
-        MERGE (b:Article {title: link.title})
-        MERGE (a)-[:LINKS_TO { label: link.label }]->(b)
-        RETURN a;
-      `,
-      { article },
-    );
+      await tx.run(
+        `//cypher
+          MATCH (a:Article {title: $article.title})
+          WITH a
+          UNWIND $article.links as link
+          MERGE (b:Article {title: link.title})
+          MERGE (a)-[:LINKS_TO { label: link.label }]->(b)
+          RETURN a;
+        `,
+        { article },
+      );
+    });
+
     return { ok: true };
   } catch (err) {
     return {
       ok: false,
       error: err instanceof Error ? err : `${err}`,
     };
+  } finally {
+    session.close();
   }
 }

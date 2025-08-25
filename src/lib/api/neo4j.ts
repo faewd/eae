@@ -58,37 +58,61 @@ export async function mergeIntoGraph(
     await session.executeWrite(async (tx) => {
       await tx.run(
         `//cypher
+          // Create or Update Article
           MERGE (a:Article {title: $title})
           ON CREATE SET a = $article
           ON MATCH SET a += $article
 
           WITH 0 as dummy
 
-          MATCH (a:Article {title: $article.title})-[r:LINKS_TO]->(:Article)
+          // Delete any existing links from this article
+          MATCH (:Article {title: $article.title})-[r:LINKS_TO]->(:Article)
           DELETE r
 
           WITH 0 as dummy
 
-          MATCH (a:Article) WHERE a.content IS NULL AND NOT (a)<-[:LINKS_TO]-()
+          // Delete any placeholder articles that are no-longer linked to
+          MATCH (a:Article) WHERE a.content IS NULL AND NOT (:Article)-[:LINKS_TO]->(a)
           DELETE a
+
+          WITH 0 as dummy
+
+          // Delete any tags this article already had
+          MATCH (a:Article {title: $title})
+          MATCH (:Tag)-[r:APPLIES_TO]->(a)
+          DELETE r
+
+          WITH 0 as dummy
+
+          // Delete any tags that apply to no articles
+          MATCH (t:Tag) WHERE NOT (t)-[:APPLIES_TO]->(:Article)
+          DELETE t
         `,
         {
           title: oldName ?? article.title,
           article: { title: article.title, content: article.content },
-          links: article.links,
         },
       );
 
       await tx.run(
         `//cypher
+          // Create any links the new version of the article has
           MATCH (a:Article {title: $article.title})
           WITH a
           UNWIND $article.links as link
           MERGE (b:Article {title: link.title})
-          MERGE (a)-[:LINKS_TO { label: link.label }]->(b)
-          RETURN a;
+          MERGE r=(a)-[:LINKS_TO { label: link.label }]->(b)
+
+          WITH 0 as dummy
+
+          // Create any tags the new version of the article has
+          MATCH (a:Article {title: $article.title})
+          WITH a
+          UNWIND $tags as tag
+          MERGE (t:Tag { label: tag })
+          MERGE (t)-[:APPLIES_TO]->(a)
         `,
-        { article },
+        { article, tags: article.metadata.tags },
       );
     });
 

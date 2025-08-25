@@ -74,8 +74,18 @@
   </section>
 
   <footer class="mt-auto w-full">
-    <h2 class="!mb-0 !border-b-zinc-700 !text-zinc-500">Metadata</h2>
-    <code><pre class="mt-3 text-zinc-500">{JSON.stringify(article.metadata, null, 2)}</pre></code>
+    <section>
+      <h2 class="!mb-3 !border-b-zinc-700 !text-zinc-500">Tags</h2>
+      <ul class="not-prose flex gap-2">
+        {#each article.metadata.tags as tag (tag)}
+          <li class="rounded bg-zinc-800 px-2 py-0 font-bold text-zinc-500">{tag}</li>
+        {/each}
+      </ul>
+    </section>
+    <section>
+      <h2 class="!mb-3 !border-b-zinc-700 !text-zinc-500">Metadata</h2>
+      <code><pre class="mt-0 text-zinc-500">{JSON.stringify(article.metadata, null, 2)}</pre></code>
+    </section>
   </footer>
 </article>
 

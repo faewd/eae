@@ -16,7 +16,7 @@ export class ParserError extends Error {
   }
 }
 
-function createMarkdownParser(linkCollector: () => void, wikilinkPrefix = "/article/") {
+function createMarkdownParser(linkCollector: (link: Link) => void, wikilinkPrefix = "/article/") {
   return MarkdownIt()
     .use(pluginFrontMatter, () => {})
     .use(pluginAlert)
@@ -29,7 +29,7 @@ function createMarkdownParser(linkCollector: () => void, wikilinkPrefix = "/arti
 export function parse(source: string, wikilinkPrefix = "/article/"): Article {
   const links: Link[] = [];
 
-  const md = createMarkdownParser(links.push, wikilinkPrefix);
+  const md = createMarkdownParser((link) => links.push(link), wikilinkPrefix);
 
   const tokens = md.parse(source, {});
   const frontmatter = tokens.find((token) => token.type === "front_matter" && token.meta);
@@ -55,10 +55,12 @@ function extractTitle(source: string): string {
   return matches[0][0].substring(1).trim();
 }
 
-const FM_DEFAULTS = {};
+const FM_DEFAULTS = {
+  tags: [],
+};
 
 function parseFrontmatter(source: string | undefined): ArticleMetadata {
-  const properties = source !== undefined ? yaml.parse(source) : {};
+  const properties: Partial<ArticleMetadata> = source !== undefined ? yaml.parse(source) : {};
 
   return Object.assign({}, FM_DEFAULTS, properties);
 }

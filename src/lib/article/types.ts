@@ -9,6 +9,7 @@ export interface Article {
 }
 
 export interface ArticleMetadata {
+  tags: string[];
   infobox?: Infobox;
 }
 

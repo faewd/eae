@@ -12,8 +12,8 @@
 </script>
 
 <aside
-  class={cx("pointer-events-none fixed z-100 h-screen w-screen bg-zinc-900/20 transition-all", {
-    "backdrop-blur": visible,
+  class={cx("pointer-events-none fixed z-100 h-screen w-screen transition-all", {
+    "bg-zinc-900/20 backdrop-blur": visible,
   })}
 >
   <div

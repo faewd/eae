@@ -45,7 +45,6 @@
 		]
 	},
 	"dependencies": {
-		"@elastic/elasticsearch": "8",
 		"@lucide/svelte": "^0.540.0",
 		"@mdit/plugin-alert": "^0.22.2",
 		"clsx": "^2.1.1",

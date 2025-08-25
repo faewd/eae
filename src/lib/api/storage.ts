@@ -1,6 +1,9 @@
 import { applyPatch } from "diff";
 import { join } from "node:path";
 import fs from "node:fs/promises";
+import type { DBResult } from "./result";
+
+type FSResult<E extends string> = DBResult<{ content: string }, E>;
 
 const basePath = join(import.meta.dirname, "../../../.data");
 
@@ -8,17 +11,7 @@ function getFilePath(name: string) {
   return join(basePath, "articles", encodeURIComponent(name) + ".md");
 }
 
-export type DBResult =
-  | {
-      ok: false;
-      error: string;
-    }
-  | {
-      ok: true;
-      content: string;
-    };
-
-export async function getArticle(name: string): Promise<DBResult> {
+export async function getArticle(name: string): Promise<FSResult<"not-found">> {
   const path = getFilePath(name);
   try {
     const content = await fs.readFile(path);
@@ -30,12 +23,16 @@ export async function getArticle(name: string): Promise<DBResult> {
     console.error(err);
     return {
       ok: false,
-      error: `Failed to read article with name ${name}.`,
+      code: "not-found",
+      error: `Couldn't find an article titled "${name}".`,
     };
   }
 }
 
-export async function writeArticle(name: string, content: string): Promise<DBResult> {
+export async function writeArticle(
+  name: string,
+  content: string,
+): Promise<FSResult<"write-failed">> {
   const path = getFilePath(name);
   try {
     await fs.writeFile(path, content);
@@ -47,12 +44,13 @@ export async function writeArticle(name: string, content: string): Promise<DBRes
     console.error(err);
     return {
       ok: false,
-      error: `Failed to write article with name ${name}.`,
+      code: "write-failed",
+      error: `Failed to write article "${name}".`,
     };
   }
 }
 
-export async function deleteArticle(name: string): Promise<DBResult> {
+export async function deleteArticle(name: string): Promise<FSResult<"delete-failed">> {
   const path = getFilePath(name);
   try {
     await fs.rm(path);
@@ -64,12 +62,16 @@ export async function deleteArticle(name: string): Promise<DBResult> {
     console.error(err);
     return {
       ok: false,
-      error: `Failed to delete article with name ${name}.`,
+      code: "delete-failed",
+      error: `Failed to delete article "${name}".`,
     };
   }
 }
 
-async function patchArticleWithoutSaving(name: string, patch: string): Promise<DBResult> {
+async function patchArticleWithoutSaving(
+  name: string,
+  patch: string,
+): Promise<FSResult<"not-found" | "patch-failed">> {
   const base = await getArticle(name);
   if (!base.ok) return base;
 
@@ -77,7 +79,8 @@ async function patchArticleWithoutSaving(name: string, patch: string): Promise<D
   if (!patched) {
     return {
       ok: false,
-      error: `Failed to patch article with name ${name}.`,
+      code: "patch-failed",
+      error: `Failed to patch article "${name}".`,
     };
   }
 
@@ -87,13 +90,19 @@ async function patchArticleWithoutSaving(name: string, patch: string): Promise<D
   };
 }
 
-export async function patchArticle(name: string, patch: string): Promise<DBResult> {
+export async function patchArticle(
+  name: string,
+  patch: string,
+): Promise<FSResult<"not-found" | "patch-failed" | "write-failed">> {
   const patchResult = await patchArticleWithoutSaving(name, patch);
   if (!patchResult.ok) return patchResult;
   return writeArticle(name, patchResult.content);
 }
 
-async function renameArticle(oldName: string, newName: string): Promise<DBResult> {
+async function renameArticle(
+  oldName: string,
+  newName: string,
+): Promise<FSResult<"not-found" | "rename-failed">> {
   const getResult = await getArticle(oldName);
   if (!getResult.ok) return getResult;
   try {
@@ -103,7 +112,8 @@ async function renameArticle(oldName: string, newName: string): Promise<DBResult
     console.error(err);
     return {
       ok: false,
-      error: `Failed to rename '${oldName}' to '${newName}'.`,
+      code: "rename-failed",
+      error: `Failed to rename "${oldName}" to "${newName}".`,
     };
   }
 }
@@ -112,7 +122,16 @@ export async function patchAndRenameArticle(
   oldName: string,
   newName: string,
   patch: string,
-): Promise<DBResult> {
+): Promise<
+  FSResult<
+    | "not-found"
+    | "backup-failed"
+    | "patch-failed"
+    | "write-failed"
+    | "rename-failed"
+    | "delete-failed"
+  >
+> {
   const getResult = await getArticle(oldName);
   if (!getResult.ok) return getResult;
 
@@ -121,7 +140,8 @@ export async function patchAndRenameArticle(
   if (!backupResult.ok) {
     return {
       ok: false,
-      error: `Failed to back up "${oldName}": ${backupResult.error}`,
+      code: "backup-failed",
+      error: `Failed to back up article "${oldName}".`,
     };
   }
 

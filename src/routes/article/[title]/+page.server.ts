@@ -10,5 +10,5 @@ export const load: PageServerLoad = async ({ params }) => {
     return parse(readResult.content);
   }
 
-  return error(500, readResult.error);
+  return error(readResult.code === "not-found" ? 404 : 500, readResult.error);
 };

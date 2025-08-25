@@ -1,7 +1,8 @@
 import type { Article } from "$lib/article/types";
 import neo4j, { type Driver } from "neo4j-driver";
+import type { DBResult } from "./result";
 
-type N4jResult = { ok: false; error: Error | string } | { ok: true };
+type N4jResult<E extends string> = DBResult<Record<never, never>, E>;
 
 let _driver: Driver | null = null;
 
@@ -47,7 +48,10 @@ export async function init() {
   }
 }
 
-export async function mergeIntoGraph(article: Article, oldName?: string): Promise<N4jResult> {
+export async function mergeIntoGraph(
+  article: Article,
+  oldName?: string,
+): Promise<N4jResult<"n4j-query-error">> {
   const driver = await ensureDriver();
   const session = driver.session({ database: "neo4j" });
   try {
@@ -92,7 +96,9 @@ export async function mergeIntoGraph(article: Article, oldName?: string): Promis
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err : `${err}`,
+      code: "n4j-query-error",
+      error: "Failed to update the graph.",
+      detail: err,
     };
   } finally {
     session.close();

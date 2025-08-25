@@ -27,10 +27,19 @@ export async function init() {
   try {
     await session.executeWrite(async (tx) => {
       await tx.run(`//cypher
-        CREATE INDEX article_title_idx IF NOT EXISTS FOR (a:Article) ON (a.title)
+        DROP INDEX article_title_idx IF EXISTS
       `);
       await tx.run(`//cypher
-        CREATE FULLTEXT INDEX article_text_idx IF NOT EXISTS FOR (a:Article) ON EACH [a.title, a.content]
+        DROP INDEX article_text_idx IF EXISTS
+      `);
+    });
+
+    await session.executeWrite(async (tx) => {
+      await tx.run(`//cypher
+        CREATE INDEX article_title_idx FOR (a:Article) ON (a.title)
+      `);
+      await tx.run(`//cypher
+        CREATE FULLTEXT INDEX article_text_idx FOR (a:Article) ON EACH [a.title, a.content]
       `);
     });
   } finally {
@@ -97,7 +106,12 @@ export async function searchArticles(query: string): Promise<{ title: string }[]
     CALL db.index.fulltext.queryNodes("article_text_idx", $query) YIELD node
     RETURN node.title as title
   `,
-    { query },
+    {
+      query: query
+        .split(/\s+/)
+        .map((word) => word + "~")
+        .join(" "),
+    },
   );
   return records.map((record) => ({
     title: record.get("title"),

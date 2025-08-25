@@ -17,9 +17,9 @@
   let value = $state(article.source);
 
   afterNavigate(() => {
-    base = article
-    value = article.source
-  })
+    base = article;
+    value = article.source;
+  });
 
   let { article: preview, errors: parsingErrors } = $derived.by(() => {
     try {
@@ -108,9 +108,9 @@
 
 <main class="flex h-screen max-h-full flex-col">
   <div class="flex h-12 flex-none items-center gap-4 bg-zinc-800 px-4">
-    <h1 class="text-2xl font-bold text-ice-200">Æ</h1>
+    <h1 class="ml-12 text-2xl font-bold text-ice-200">Æ</h1>
     <button
-      class="hover:bg-ice-950 cursor-pointer rounded-sm bg-zinc-900 p-1 transition-colors hover:text-ice-200 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
+      class="cursor-pointer rounded-sm bg-zinc-900 p-1 transition-colors hover:bg-ice-950 hover:text-ice-200 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
       disabled={!hasChanged}
       onclick={() => saveArticle()}
     >

@@ -1,4 +1,4 @@
-import markdownIt from "markdown-it";
+import MarkdownIt from "markdown-it";
 import pluginFrontMatter from "markdown-it-front-matter";
 import { alert as pluginAlert } from "@mdit/plugin-alert";
 import * as yaml from "yaml";
@@ -16,20 +16,26 @@ export class ParserError extends Error {
   }
 }
 
-export function parse(source: string, wikilinkPrefix = "/article/"): Article {
-  const links: Link[] = [];
-
-  const md = markdownIt()
+function createMarkdownParser(linkCollector: () => void, wikilinkPrefix = "/article/") {
+  return MarkdownIt()
     .use(pluginFrontMatter, () => {})
     .use(pluginAlert)
     .use(pluginWikilinks, {
-      collector: (link) => links.push(link),
+      collector: linkCollector,
       prefix: wikilinkPrefix,
     } satisfies WikilinkOptions);
+}
+
+export function parse(source: string, wikilinkPrefix = "/article/"): Article {
+  const links: Link[] = [];
+
+  const md = createMarkdownParser(links.push, wikilinkPrefix);
 
   const tokens = md.parse(source, {});
   const frontmatter = tokens.find((token) => token.type === "front_matter" && token.meta);
-  const metadata = parseFrontmatter(frontmatter?.meta);
+  const metadataRaw = parseFrontmatter(frontmatter?.meta);
+  const metadata = renderMetadata(metadataRaw, md);
+
   const content = md.render(source).replace(/<h1>[^<]+<\/h1>/g, "");
   const title = extractTitle(source);
   return { title, metadata, links, content, source };
@@ -49,13 +55,38 @@ function extractTitle(source: string): string {
   return matches[0][0].substring(1).trim();
 }
 
-const FM_DEFAULTS = {
-  aliases: [],
-  pins: [],
-};
+const FM_DEFAULTS = {};
 
 function parseFrontmatter(source: string | undefined): ArticleMetadata {
   const properties = source !== undefined ? yaml.parse(source) : {};
 
   return Object.assign({}, FM_DEFAULTS, properties);
+}
+
+function renderMetadata(meta: ArticleMetadata, md: MarkdownIt): ArticleMetadata {
+  const rendered = structuredClone(meta);
+  if (meta.infobox) {
+    for (let i = 0; i < meta.infobox.items.length; i++) {
+      const item = meta.infobox.items[i];
+      switch (item.kind) {
+        case "fact":
+          // eslint-disable-next-line no-case-declarations
+          const fact = rendered.infobox!.items[i] as typeof item;
+          fact.content = md.renderInline(item.content);
+          break;
+        case "list":
+          // eslint-disable-next-line no-case-declarations
+          const list = rendered.infobox!.items[i] as typeof item;
+          list.items = item.items.map((li) => md.renderInline(li));
+          break;
+        case "image":
+          // eslint-disable-next-line no-case-declarations
+          const image = rendered.infobox!.items[i] as typeof item;
+          image.caption = md.renderInline(item.caption);
+          break;
+      }
+    }
+  }
+
+  return rendered;
 }

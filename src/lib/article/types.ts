@@ -1,3 +1,5 @@
+import type { Infobox } from "./infobox";
+
 export interface Article {
   title: string;
   metadata: ArticleMetadata;
@@ -7,9 +9,7 @@ export interface Article {
 }
 
 export interface ArticleMetadata {
-  aliases: string[];
-  pins: MapPin[];
-  categories: string[];
+  infobox?: Infobox;
 }
 
 export interface Link {
@@ -17,10 +17,10 @@ export interface Link {
   label: string;
 }
 
-export interface MapPin {
-  map: string;
-  coords: [number, number];
-  type: PinType;
-}
+// export interface MapPin {
+//   map: string;
+//   coords: [number, number];
+//   type: PinType;
+// }
 
-export type PinType = "region" | "province" | "capital" | "city" | "town" | "ruin" | "poi";
+// export type PinType = "region" | "province" | "capital" | "city" | "town" | "ruin" | "poi";

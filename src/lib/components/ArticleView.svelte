@@ -16,7 +16,7 @@
 
 <article
   class={cx(
-    "prose w-full max-w-full bg-zinc-900 p-4 prose-zinc prose-invert prose-headings:font-heading prose-headings:text-ice-300 prose-h2:border-b-2 prose-h2:border-b-ice-800",
+    "prose flex h-full w-full max-w-full flex-col bg-zinc-900 p-4 prose-zinc prose-invert prose-headings:mr-auto prose-headings:overflow-hidden prose-headings:font-heading prose-headings:text-ice-300 prose-h2:border-b-2 prose-h2:border-b-ice-800",
     props.class,
   )}
 >
@@ -26,10 +26,57 @@
       <SearchBar class="max-w-1/2" />
     {/if}
   </header>
-  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-  {@html article.content}
-  <h2>Metadata</h2>
-  <code><pre>{JSON.stringify(article.metadata, null, 2)}</pre></code>
+
+  <section>
+    {#if article.metadata.infobox}
+      <aside
+        class="not-prose float-right clear-both ml-4 grid w-72 grid-cols-[repeat(2,auto)] gap-2 rounded bg-zinc-950 p-2"
+      >
+        <h2
+          class="col-span-2 rounded bg-zinc-900 px-4 py-1 text-center font-heading text-xl font-bold text-ice-300"
+        >
+          {article.metadata.infobox.title ?? article.title}
+        </h2>
+        {#each article.metadata.infobox.items as item, i (i)}
+          {#if item.kind === "heading"}
+            <h3
+              class="col-span-2 rounded bg-zinc-900 px-4 py-0 text-center font-heading font-bold text-ice-300"
+            >
+              {item.text}
+            </h3>
+          {:else if item.kind === "fact"}
+            <span class="font-bold">{item.label}</span>
+            <span>{item.content}</span>
+          {:else if item.kind === "list"}
+            <span class="font-bold">{item.label}</span>
+            {#if item.delimited}
+              <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+              <span>{@html item.items.join(item.items.some(/[,-]/.test) ? ";" : ":")}</span>
+            {:else}
+              <ul>
+                {#each item.items as listItem, i (i)}
+                  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+                  <li>{@html listItem}</li>
+                {/each}
+              </ul>
+            {/if}
+          {:else if item.kind === "image"}
+            <img class="col-span-2 w-100 rounded" src={item.src} alt={item.alt} />
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+            <p class="col-span-2 text-center text-zinc-500 italic">{@html item.caption}</p>
+          {/if}
+        {/each}
+      </aside>
+    {/if}
+
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+    {@html article.content}
+  </section>
+
+  <footer class="mt-auto w-full">
+    <h2 class="!mb-0 !border-b-zinc-700 !text-zinc-500">Metadata</h2>
+    <code><pre class="mt-3 text-zinc-500">{JSON.stringify(article.metadata, null, 2)}</pre></code>
+  </footer>
 </article>
 
 <style lang="postcss">

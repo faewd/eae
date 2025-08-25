@@ -1,7 +1,15 @@
 <script lang="ts">
   import ArticleView from "$lib/components/ArticleView.svelte";
   import MonacoEditor from "$lib/components/MonacoEditor.svelte";
-  import { CloudAlert, Eye, EyeClosed, OctagonAlert, Save, Shell } from "@lucide/svelte";
+  import {
+    CloudAlert,
+    Eye,
+    EyeClosed,
+    OctagonAlert,
+    Save,
+    Shell,
+    SquareArrowOutUpRight,
+  } from "@lucide/svelte";
   import { diff, isEmpty } from "$lib/article/diff";
   import { parse, ParserError } from "$lib/article/parse";
   import cx from "$lib/utils/cx";
@@ -107,8 +115,15 @@
 </svelte:head>
 
 <main class="flex h-screen max-h-full flex-col">
-  <div class="flex h-12 flex-none items-center gap-4 bg-zinc-800 px-4">
+  <div class="flex h-12 flex-none items-center gap-2 bg-zinc-800 px-4">
     <h1 class="ml-12 text-2xl font-bold text-ice-200">Æ</h1>
+    <a
+      class="ml-2 cursor-pointer rounded-sm bg-zinc-900 p-1 transition-colors hover:bg-ice-950 hover:text-ice-200 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
+      href={"/article/" + encodeURIComponent(article.title)}
+      target="_blank"
+    >
+      <SquareArrowOutUpRight />
+    </a>
     <button
       class="cursor-pointer rounded-sm bg-zinc-900 p-1 transition-colors hover:bg-ice-950 hover:text-ice-200 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
       disabled={!hasChanged}

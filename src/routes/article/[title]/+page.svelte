@@ -9,6 +9,6 @@
   <title>{article.title}</title>
 </svelte:head>
 
-<main class="flex justify-center">
+<main class="flex h-screen max-h-full justify-center">
   <ArticleView {article} class="max-w-[75ch]" searchbar />
 </main>

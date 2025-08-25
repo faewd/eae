@@ -1,5 +1,5 @@
 export function debounce(func: () => void, delay: number): () => void {
-  let timer: number;
+  let timer: NodeJS.Timeout;
 
   return () => {
     clearTimeout(timer);

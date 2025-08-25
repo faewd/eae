@@ -32,7 +32,7 @@
   <code><pre>{JSON.stringify(article.metadata, null, 2)}</pre></code>
 </article>
 
-<style>
+<style lang="postcss">
   @reference "tailwindcss";
 
   @layer utilities {
@@ -43,11 +43,6 @@
           display: none;
           content: "";
         }
-      }
-
-      & :where(hr) {
-        border-color: var(--color-ice-800);
-        border-top-width: 2px;
       }
 
       & :global(.markdown-alert) {

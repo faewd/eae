@@ -23,7 +23,7 @@ export const pluginWikilinks: PluginWithOptions<Options> = (mdIt, options) => {
     {
       tokenName: TOKEN_NAME,
       linkClass: LINK_CLASS,
-      prefix: "/article/",
+      prefix: "/wiki/",
       collector: () => {},
     },
     options ?? {},

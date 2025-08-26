@@ -142,7 +142,25 @@ export async function searchArticles(query: string): Promise<{ title: string }[]
         .map((word) => word + "~")
         .join(" "),
     },
+    { database: "neo4j" },
   );
+  return records.map((record) => ({
+    title: record.get("title"),
+  }));
+}
+
+export async function fetchByTag(tag: string) {
+  const driver = await ensureDriver();
+  const { records } = await driver.executeQuery(
+    `//cypher
+      MATCH (t:Tag) WHERE t.label = $tag
+      MATCH (a:Article) WHERE (t)-[:APPLIES_TO]->(a)
+      RETURN a.title as title
+    `,
+    { tag },
+    { database: "neo4j" },
+  );
+
   return records.map((record) => ({
     title: record.get("title"),
   }));

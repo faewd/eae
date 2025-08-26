@@ -15,7 +15,7 @@ export const PATCH: RequestHandler = async (event) => {
 
   if (result.ok) {
     try {
-      const article = parse(result.content);
+      const article = await parse(result.content);
       const mergeResult = await mergeIntoGraph(article, oldName);
       if (!mergeResult.ok) {
         console.error(mergeResult);

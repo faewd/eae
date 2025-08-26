@@ -16,6 +16,7 @@
   import type { PageProps } from "./$types";
   import RenameModal from "./RenameModal.svelte";
   import { afterNavigate } from "$app/navigation";
+  import type { Article } from "$lib/article/types";
 
   let { data: article }: PageProps = $props();
 
@@ -29,24 +30,29 @@
     value = article.source;
   });
 
-  let { article: preview, errors: parsingErrors } = $derived.by(() => {
-    try {
-      const article = parse(value, "/edit/");
-      return { article, errors: [] as ParserError[] };
-    } catch (err) {
-      return {
-        article: null,
-        errors:
+  let preview: Article | null = $state(null);
+  let parsingErrors: ParserError[] = $state([]);
+
+  $effect(() => {
+    parse(value, true, "/edit/")
+      .then((article) => {
+        preview = article;
+        parsingErrors = [];
+      })
+      .catch((err) => {
+        console.error(err);
+        preview = null;
+        parsingErrors =
           err instanceof ParserError
             ? [err]
-            : [new ParserError({ offset: 1, length: 1 }, "Failed to parse article.")],
-      };
-    }
+            : [new ParserError({ offset: 1, length: 1 }, "Failed to parse article")];
+      });
   });
 
-  let changes: string = $derived(
-    diff(preview?.title ?? base.title, value, base.title, base.source),
-  );
+  let changes: string = $derived.by(() => {
+    const title = preview?.title ?? base.title;
+    return diff(title, value, base.title, base.source);
+  });
   let hasChanged: boolean = $derived(!isEmpty(changes));
 
   let showPreview = $state(true);
@@ -93,7 +99,7 @@
         error = body.error ?? "Unexpected error while saving.";
       } else {
         value = body.content;
-        const newArticle = parse(value);
+        const newArticle = await parse(value, true);
         if (newArticle.title !== base.title) {
           window.location.href = `/editor/${newArticle.title}`;
         }
@@ -119,7 +125,7 @@
     <h1 class="ml-12 text-2xl font-bold text-ice-200">Æ</h1>
     <a
       class="ml-2 cursor-pointer rounded-sm bg-zinc-900 p-1 transition-colors hover:bg-ice-950 hover:text-ice-200 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
-      href={"/article/" + encodeURIComponent(article.title)}
+      href={"/wiki/" + encodeURIComponent(article.title)}
       target="_blank"
     >
       <SquareArrowOutUpRight />

@@ -21,7 +21,7 @@
         <span class="text-red-300">Dungeons &amp; Dragons</span>, drawn straight from the notes of
         <a
           target="_self"
-          href="/article/Enna Berevian"
+          href="/wiki/Enna Berevian"
           class="text-ice-200 no-underline transition-colors hover:text-ice-100 hover:underline"
           >Enna Berevian</a
         >. Enna is one of few Eladrin who walk the Prime Material Plane, of whom she is the oldest

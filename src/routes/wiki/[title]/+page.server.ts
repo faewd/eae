@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({ params }) => {
   const readResult = await getArticle(params.title);
 
   if (readResult.ok) {
-    return parse(readResult.content);
+    return await parse(readResult.content);
   }
 
   return error(readResult.code === "not-found" ? 404 : 500, readResult.error);

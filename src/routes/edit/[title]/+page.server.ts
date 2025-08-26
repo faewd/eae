@@ -8,11 +8,11 @@ export const load: PageServerLoad = async ({ params }) => {
   const readResult = await getArticle(params.title);
 
   if (readResult.ok) {
-    return parse(readResult.content);
+    return await parse(readResult.content);
   }
 
   const writeResult = await writeArticle(params.title, makeDefaultArticle(params.title));
-  if (writeResult.ok) return parse(writeResult.content);
+  if (writeResult.ok) return await parse(writeResult.content);
 
   return error(500, writeResult.error);
 };

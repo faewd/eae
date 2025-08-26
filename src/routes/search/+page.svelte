@@ -4,8 +4,6 @@
   import SearchBar from "$lib/components/SearchBar.svelte";
 
   let { data }: PageProps = $props();
-
-  $effect(() => console.log(data));
 </script>
 
 <main class="flex justify-center">
@@ -21,18 +19,20 @@
       {:else}
         <ol class="flex flex-col gap-2">
           {#each data.results as article (article.title)}
-            <a target="_self" href={"/article/" + encodeURIComponent(article.title)}>
-              <article
-                class="group flex justify-between rounded bg-zinc-800 p-2 transition-colors hover:bg-zinc-700"
-              >
-                <h3 class="font-heading font-bold text-ice-200 group-hover:text-ice-100">
-                  {article.title}
-                </h3>
-                <ArrowRight
-                  class="translate-x-3 text-ice-300 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-                />
-              </article>
-            </a>
+            <li>
+              <a target="_self" href={"/wiki/" + encodeURIComponent(article.title)}>
+                <article
+                  class="group flex justify-between rounded bg-zinc-800 p-2 transition-colors hover:bg-zinc-700"
+                >
+                  <h3 class="font-heading font-bold text-ice-200 group-hover:text-ice-100">
+                    {article.title}
+                  </h3>
+                  <ArrowRight
+                    class="translate-x-3 text-ice-300 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                  />
+                </article>
+              </a>
+            </li>
           {/each}
         </ol>
       {/if}

@@ -4,6 +4,7 @@ import { alert as pluginAlert } from "@mdit/plugin-alert";
 import * as yaml from "yaml";
 import type { Article, ArticleMetadata, Link } from "./types";
 import { pluginWikilinks, type Options as WikilinkOptions } from "./wikilinks";
+import { pluginEmbed, type EmbedOptions } from "./embeds";
 
 export type Span = { offset: number; length: number };
 
@@ -16,27 +17,52 @@ export class ParserError extends Error {
   }
 }
 
-function createMarkdownParser(linkCollector: (link: Link) => void, wikilinkPrefix = "/article/") {
+function createMarkdownParser(
+  linkCollector: (link: Link) => void,
+  embedPromises: Map<string, Promise<string>>,
+  isClient: boolean,
+  wikilinkPrefix: string,
+) {
   return MarkdownIt()
     .use(pluginFrontMatter, () => {})
     .use(pluginAlert)
+    .use(pluginEmbed, {
+      promises: embedPromises,
+      isClient,
+    } satisfies EmbedOptions)
     .use(pluginWikilinks, {
       collector: linkCollector,
       prefix: wikilinkPrefix,
     } satisfies WikilinkOptions);
 }
 
-export function parse(source: string, wikilinkPrefix = "/article/"): Article {
+export async function parse(
+  source: string,
+  isClient = false,
+  wikilinkPrefix = "/wiki/",
+): Promise<Article> {
   const links: Link[] = [];
+  const embedPromises = new Map<string, Promise<string>>();
 
-  const md = createMarkdownParser((link) => links.push(link), wikilinkPrefix);
+  const md = createMarkdownParser(
+    (link) => links.push(link),
+    embedPromises,
+    isClient,
+    wikilinkPrefix,
+  );
 
   const tokens = md.parse(source, {});
   const frontmatter = tokens.find((token) => token.type === "front_matter" && token.meta);
   const metadataRaw = parseFrontmatter(frontmatter?.meta);
   const metadata = renderMetadata(metadataRaw, md);
 
-  const content = md.render(source).replace(/<h1>[^<]+<\/h1>/g, "");
+  let content = md.render(source).replace(/<h1>[^<]+<\/h1>/g, "");
+
+  for (const [embedId, promise] of embedPromises) {
+    const value = await promise;
+    content = content.replace(`{%${embedId}%}`, value);
+  }
+
   const title = extractTitle(source);
   return { title, metadata, links, content, source };
 }

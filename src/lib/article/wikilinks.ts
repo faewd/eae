@@ -14,6 +14,8 @@ export interface Options {
   linkClass?: string;
   prefix: string;
   collector: (link: Link) => void;
+  contentPromises: Map<string, Promise<string>>;
+  isClient: boolean;
 }
 
 type ResolvedOptions = Required<Options>;
@@ -25,6 +27,8 @@ export const pluginWikilinks: PluginWithOptions<Options> = (mdIt, options) => {
       linkClass: LINK_CLASS,
       prefix: "/wiki/",
       collector: () => {},
+      isClient: false,
+      contentPromises: new Map(),
     },
     options ?? {},
   );
@@ -75,5 +79,21 @@ const renderer: (opts: ResolvedOptions) => Renderer.RenderRule = (opts) => (toke
   const title = tokens[idx].attrGet("title")!;
   const label = tokens[idx].attrGet("label") ?? title;
   opts.collector({ title, label });
-  return `<a target="_self" href="${opts.prefix}${title}" class="${opts.linkClass}">${label}</a>`;
+  if (opts.isClient)
+    return `<a target="_self" href="${opts.prefix}${title}" class="${opts.linkClass}">${label}</a>`;
+
+  let id: string;
+  do {
+    id = (Math.random() + 1).toString(36).substring(2, 9);
+  } while (opts.contentPromises.has(id));
+
+  const linkColor = import("$lib/api/storage")
+    .then(({ getArticle }) => getArticle(title))
+    .then((res) => res.ok)
+    .catch(() => false)
+    .then((exists) => (exists ? "" : " !text-rose-300"));
+
+  opts.contentPromises.set(id, linkColor);
+
+  return `<a target="_self" href="${opts.prefix}${title}" class="${opts.linkClass}{%${id}%}">${label}</a>`;
 };

@@ -19,7 +19,7 @@ export class ParserError extends Error {
 
 function createMarkdownParser(
   linkCollector: (link: Link) => void,
-  embedPromises: Map<string, Promise<string>>,
+  contentPromises: Map<string, Promise<string>>,
   isClient: boolean,
   wikilinkPrefix: string,
 ) {
@@ -27,12 +27,14 @@ function createMarkdownParser(
     .use(pluginFrontMatter, () => {})
     .use(pluginAlert)
     .use(pluginEmbed, {
-      promises: embedPromises,
+      contentPromises,
       isClient,
     } satisfies EmbedOptions)
     .use(pluginWikilinks, {
       collector: linkCollector,
       prefix: wikilinkPrefix,
+      contentPromises,
+      isClient,
     } satisfies WikilinkOptions);
 }
 
@@ -42,11 +44,11 @@ export async function parse(
   wikilinkPrefix = "/wiki/",
 ): Promise<Article> {
   const links: Link[] = [];
-  const embedPromises = new Map<string, Promise<string>>();
+  const contentPromises = new Map<string, Promise<string>>();
 
   const md = createMarkdownParser(
     (link) => links.push(link),
-    embedPromises,
+    contentPromises,
     isClient,
     wikilinkPrefix,
   );
@@ -54,14 +56,11 @@ export async function parse(
   const tokens = md.parse(source, {});
   const frontmatter = tokens.find((token) => token.type === "front_matter" && token.meta);
   const metadataRaw = parseFrontmatter(frontmatter?.meta);
-  const metadata = renderMetadata(metadataRaw, md);
-
-  let content = md.render(source).replace(/<h1>[^<]+<\/h1>/g, "");
-
-  for (const [embedId, promise] of embedPromises) {
-    const value = await promise;
-    content = content.replace(`{%${embedId}%}`, value);
-  }
+  const metadata = await renderMetadata(metadataRaw, md, contentPromises);
+  const content = await fulfilContentPromises(
+    md.render(source).replace(/<h1>[^<]+<\/h1>/g, ""),
+    contentPromises,
+  );
 
   const title = extractTitle(source);
   return { title, metadata, links, content, source };
@@ -91,7 +90,29 @@ function parseFrontmatter(source: string | undefined): ArticleMetadata {
   return Object.assign({}, FM_DEFAULTS, properties);
 }
 
-function renderMetadata(meta: ArticleMetadata, md: MarkdownIt): ArticleMetadata {
+async function fulfilContentPromises(
+  content: string,
+  contentPromises: Map<string, Promise<string>>,
+): Promise<string> {
+  for (const [contentId, promise] of contentPromises) {
+    const placeholder = `{%${contentId}%}`;
+    if (content.includes(placeholder)) {
+      const value = await promise;
+      content = content.replace(placeholder, value);
+    }
+  }
+  return content;
+}
+
+async function renderMetadata(
+  meta: ArticleMetadata,
+  md: MarkdownIt,
+  contentPromises: Map<string, Promise<string>>,
+): Promise<ArticleMetadata> {
+  function renderInline(content: string): Promise<string> {
+    return fulfilContentPromises(md.renderInline(content), contentPromises);
+  }
+
   const rendered = structuredClone(meta);
   if (meta.infobox) {
     for (let i = 0; i < meta.infobox.items.length; i++) {
@@ -100,17 +121,17 @@ function renderMetadata(meta: ArticleMetadata, md: MarkdownIt): ArticleMetadata 
         case "fact":
           // eslint-disable-next-line no-case-declarations
           const fact = rendered.infobox!.items[i] as typeof item;
-          fact.content = md.renderInline(item.content);
+          fact.content = await renderInline(item.content);
           break;
         case "list":
           // eslint-disable-next-line no-case-declarations
           const list = rendered.infobox!.items[i] as typeof item;
-          list.items = item.items.map((li) => md.renderInline(li));
+          list.items = await Promise.all(item.items.map((li) => renderInline(li)));
           break;
         case "image":
           // eslint-disable-next-line no-case-declarations
           const image = rendered.infobox!.items[i] as typeof item;
-          image.caption = md.renderInline(item.caption);
+          image.caption = await renderInline(item.caption);
           break;
       }
     }

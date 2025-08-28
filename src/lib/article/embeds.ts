@@ -12,13 +12,13 @@ const SPLIT_PATTERN = /(\{%\s*\w+(?:\s+(?:\w+|"[^"]*"))*\s*%\})/;
 const ARG_PATTERN = /^(\w+|"(?:\\"|[^"])+")/;
 
 export interface EmbedOptions {
-  promises: Map<string, Promise<string>>;
+  contentPromises: Map<string, Promise<string>>;
   isClient: boolean;
 }
 
 export const pluginEmbed: PluginWithOptions<EmbedOptions> = (mdIt, options) => {
   mdIt.core.ruler.push(TOKEN_NAME, coreRule);
-  mdIt.renderer.rules[TOKEN_NAME] = renderer(options!.promises, options!.isClient);
+  mdIt.renderer.rules[TOKEN_NAME] = renderer(options!.contentPromises, options!.isClient);
 };
 
 const coreRule: RuleCore = (state) => {

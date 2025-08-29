@@ -7,9 +7,9 @@
   <div class="flex flex-col-reverse items-center gap-8 p-4 sm:p-10 lg:flex-row">
     <div class="prose flex-1 flex-shrink text-center prose-zinc prose-invert">
       <h1
-        class="sm:mv-3 mb-2 font-heading text-[2rem] font-normal text-ice-300 sm:text-[3rem] xl:mb-4 xl:text-[4rem]"
+        class="sm:mv-3 mb-2 font-heading text-[3rem] font-normal text-ice-300 sm:text-[4rem] xl:mb-4 xl:text-[5rem]"
       >
-        Enna's Auriinic<br />Encyclopædia
+        Enna's&nbsp;Auriinic<br />Encyclopædia
       </h1>
       <img
         src={fancyRule}

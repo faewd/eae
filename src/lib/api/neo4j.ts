@@ -1,5 +1,5 @@
 import type { Article } from "$lib/article/types";
-import neo4j, { type Driver } from "neo4j-driver";
+import neo4j, { Integer, type Driver } from "neo4j-driver";
 import type { DBResult } from "./result";
 
 type N4jResult<E extends string> = DBResult<Record<never, never>, E>;
@@ -56,61 +56,70 @@ export async function mergeIntoGraph(
   const session = driver.session({ database: "neo4j" });
   try {
     await session.executeWrite(async (tx) => {
+      // Create or Update Article
       await tx.run(
         `//cypher
-          // Create or Update Article
-          MERGE (a:Article {title: $title})
-          ON CREATE SET a = $article
-          ON MATCH SET a += $article
-
-          WITH 0 as dummy
-
-          // Delete any existing links from this article
-          MATCH (:Article {title: $article.title})-[r:LINKS_TO]->(:Article)
-          DELETE r
-
-          WITH 0 as dummy
-
-          // Delete any placeholder articles that are no-longer linked to
-          MATCH (a:Article) WHERE a.content IS NULL AND NOT (:Article)-[:LINKS_TO]->(a)
-          DELETE a
-
-          WITH 0 as dummy
-
-          // Delete any tags this article already had
-          MATCH (a:Article {title: $title})
-          MATCH (:Tag)-[r:APPLIES_TO]->(a)
-          DELETE r
-
-          WITH 0 as dummy
-
-          // Delete any tags that apply to no articles
-          MATCH (t:Tag) WHERE NOT (t)-[:APPLIES_TO]->(:Article)
-          DELETE t
-        `,
+        MERGE (a:Article {title: $title})
+        ON CREATE SET a = $article
+        ON MATCH SET a += $article
+      `,
         {
           title: oldName ?? article.title,
           article: { title: article.title, content: article.content },
         },
       );
 
+      // Delete any existing links from this article
       await tx.run(
         `//cypher
-          // Create any links the new version of the article has
+        MATCH (:Article {title: $article.title})-[r:LINKS_TO]->(:Article)
+        DELETE r
+      `,
+        { article },
+      );
+
+      // Delete any placeholder articles that are no-longer linked to
+      await tx.run(`//cypher
+        MATCH (a:Article) WHERE a.content IS NULL AND NOT (:Article)-[:LINKS_TO]->(a)
+        DELETE a
+      `);
+
+      // Delete any tags this article already had
+      await tx.run(
+        `//cypher
+        MATCH (a:Article {title: $title})
+        MATCH (:Tag)-[r:APPLIES_TO]->(a)
+        DELETE r
+      `,
+        { title: oldName ?? article.title },
+      );
+
+      // Delete any tags that apply to no articles
+      await tx.run(`//cypher
+        MATCH (t:Tag) WHERE NOT (t)-[:APPLIES_TO]->(:Article)
+        DELETE t
+      `);
+
+      // Create any links the new version of the article has
+      await tx.run(
+        `//cypher
           MATCH (a:Article {title: $article.title})
           WITH a
           UNWIND $article.links as link
           MERGE (b:Article {title: link.title})
           MERGE r=(a)-[:LINKS_TO { label: link.label }]->(b)
+      `,
+        { article },
+      );
 
-          WITH 0 as dummy
-
-          // Create any tags the new version of the article has
+      // Create any tags the new version of the article has
+      await tx.run(
+        `//cypher
           MATCH (a:Article {title: $article.title})
           WITH a
           UNWIND $tags as tag
           MERGE (t:Tag { label: tag })
-          MERGE (t)-[:APPLIES_TO]->(a)
+          CREATE (t)-[:APPLIES_TO]->(a)
         `,
         { article, tags: article.metadata.tags },
       );
@@ -133,9 +142,9 @@ export async function searchArticles(query: string): Promise<{ title: string }[]
   const driver = await ensureDriver();
   const { records } = await driver.executeQuery(
     `//cypher
-    CALL db.index.fulltext.queryNodes("article_text_idx", $query) YIELD node
-    RETURN node.title as title
-  `,
+      CALL db.index.fulltext.queryNodes("article_text_idx", $query) YIELD node
+      RETURN node.title as title
+    `,
     {
       query: query
         .split(/\s+/)
@@ -147,6 +156,34 @@ export async function searchArticles(query: string): Promise<{ title: string }[]
   return records.map((record) => ({
     title: record.get("title"),
   }));
+}
+
+export async function listTags(page = 0, size = 25) {
+  const driver = await ensureDriver();
+  const { records } = await driver.executeQuery(
+    `//cypher
+      MATCH (t:Tag)
+      WITH count(*) as total
+      MATCH (t:Tag)-[:APPLIES_TO]->(a:Article)
+      WITH t as tag, count(a) as usages, collect(a) as articles, total
+      WHERE usages > 0
+      ORDER BY tag.label ASC
+      SKIP $offset
+      LIMIT $limit
+      RETURN tag.label as label, usages, articles, total;
+    `,
+    { offset: new Integer(page * size), limit: new Integer(size) },
+    { database: "neo4j" },
+  );
+  return {
+    total: records[0]?.get("total")?.toNumber() ?? 0,
+    page: records.map((record) => ({
+      label: record.get("label"),
+      usages: record.get("usages").toNumber(),
+      articles: record.get("articles").map((a: { title: string }) => a.title),
+      total: record.get("total").toNumber(),
+    })),
+  };
 }
 
 export async function fetchByTag(tag: string) {
@@ -163,5 +200,28 @@ export async function fetchByTag(tag: string) {
 
   return records.map((record) => ({
     title: record.get("title"),
+  }));
+}
+
+export async function listSimilarTags(tag: string) {
+  const driver = await ensureDriver();
+  const { records } = await driver.executeQuery(
+    `//cypher
+      MATCH (t:Tag) WHERE t.label = $tag
+      MATCH (t)-[:APPLIES_TO]->(a:Article)
+      MATCH (o:Tag)-[r:APPLIES_TO]->(a)
+      WHERE o <> t
+      LIMIT 10
+      WITH o.label as label, count(r) as times
+      ORDER BY times DESC, label ASC
+      RETURN label, times as count;
+    `,
+    { tag },
+    { database: "neo4j" },
+  );
+
+  return records.map((r) => ({
+    label: r.get("label"),
+    count: r.get("count").toNumber(),
   }));
 }

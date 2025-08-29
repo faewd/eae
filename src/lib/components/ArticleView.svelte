@@ -4,6 +4,7 @@
   import type { ClassValue } from "clsx";
   import "@mdit/plugin-alert/style";
   import SearchBar from "./SearchBar.svelte";
+  import { Braces, Tags } from "@lucide/svelte";
 
   interface Props {
     article: Article;
@@ -75,15 +76,28 @@
 
   <footer class="mt-auto w-full">
     <section>
-      <h2 class="!mb-3 !border-b-zinc-700 !text-zinc-500">Tags</h2>
+      <h2 class="!mb-3 flex items-center gap-2 !border-b-zinc-700 !text-zinc-500">
+        <Tags />
+        Tags
+      </h2>
       <ul class="not-prose flex gap-2">
         {#each article.metadata.tags as tag (tag)}
-          <li class="rounded bg-zinc-800 px-2 py-0 font-bold text-zinc-500">{tag}</li>
+          <li>
+            <a
+              href="/tag/{tag}"
+              class="rounded bg-zinc-800 px-2 py-1 font-bold text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-zinc-300 hover:underline"
+            >
+              {tag}
+            </a>
+          </li>
         {/each}
       </ul>
     </section>
     <section>
-      <h2 class="!mb-3 !border-b-zinc-700 !text-zinc-500">Metadata</h2>
+      <h2 class="!mb-3 flex items-center gap-2 !border-b-zinc-700 !text-zinc-500">
+        <Braces />
+        Metadata
+      </h2>
       <code><pre class="mt-0 text-zinc-500">{JSON.stringify(article.metadata, null, 2)}</pre></code>
     </section>
   </footer>

@@ -105,8 +105,9 @@ const EMBEDS: Embed[] = [
       const tag = args[0];
       const heading = args[1] ?? `Articles Tagged with: ${tag}`;
       const articles = await fetchByTag(tag);
-      const articlesHtml = articles.map(
-        ({ title }) => dedent`
+      const articlesHtml = articles
+        .map(
+          ({ title }) => dedent`
           <li>
             <a target="_self" href="/wiki/${encodeURIComponent(title)}">
               <article
@@ -122,7 +123,8 @@ const EMBEDS: Embed[] = [
             </a>
           </li>
         `,
-      );
+        )
+        .join("\n");
       return dedent`
         <section class="not-prose bg-zinc-950 rounded p-4">
           <h1 class="text-2xl font-bold font-heading text-ice-500">${heading}</h1>

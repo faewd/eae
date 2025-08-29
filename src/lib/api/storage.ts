@@ -20,11 +20,11 @@ export async function getArticle(name: string): Promise<FSResult<"not-found">> {
       content: content.toString(),
     };
   } catch (err) {
-    console.error(err);
     return {
       ok: false,
       code: "not-found",
       error: `Couldn't find an article titled "${name}".`,
+      detail: err,
     };
   }
 }

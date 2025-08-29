@@ -55,6 +55,7 @@
 		"markdown-it-front-matter": "^0.2.4",
 		"monaco-editor": "^0.52.2",
 		"neo4j-driver": "^5.28.1",
+		"ol": "^10.6.1",
 		"tailwind-merge": "^3.3.1",
 		"yaml": "^2.8.1"
 	}

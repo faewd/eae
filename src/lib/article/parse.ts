@@ -3,8 +3,8 @@ import pluginFrontMatter from "markdown-it-front-matter";
 import { alert as pluginAlert } from "@mdit/plugin-alert";
 import * as yaml from "yaml";
 import type { Article, ArticleMetadata, Link } from "./types";
-import { pluginWikilinks, type Options as WikilinkOptions } from "./wikilinks";
-import { pluginEmbed, type EmbedOptions } from "./embeds";
+import { pluginWikilinks } from "./wikilinks";
+import { pluginEmbed } from "./embeds";
 
 export type Span = { offset: number; length: number };
 
@@ -20,7 +20,7 @@ export class ParserError extends Error {
 function createMarkdownParser(
   linkCollector: (link: Link) => void,
   contentPromises: Map<string, Promise<string>>,
-  isClient: boolean,
+  db: typeof import("$lib/api/db") | undefined,
   wikilinkPrefix: string,
 ) {
   return MarkdownIt()
@@ -28,30 +28,27 @@ function createMarkdownParser(
     .use(pluginAlert)
     .use(pluginEmbed, {
       contentPromises,
-      isClient,
-    } satisfies EmbedOptions)
+      isClient: db === undefined,
+      db,
+    })
     .use(pluginWikilinks, {
       collector: linkCollector,
       prefix: wikilinkPrefix,
       contentPromises,
-      isClient,
-    } satisfies WikilinkOptions);
+      isClient: db === undefined,
+      db,
+    });
 }
 
 export async function parse(
   source: string,
-  isClient = false,
+  db: typeof import("$lib/api/db") | undefined = undefined,
   wikilinkPrefix = "/wiki/",
 ): Promise<Article> {
   const links: Link[] = [];
   const contentPromises = new Map<string, Promise<string>>();
 
-  const md = createMarkdownParser(
-    (link) => links.push(link),
-    contentPromises,
-    isClient,
-    wikilinkPrefix,
-  );
+  const md = createMarkdownParser((link) => links.push(link), contentPromises, db, wikilinkPrefix);
 
   const tokens = md.parse(source, {});
   const frontmatter = tokens.find((token) => token.type === "front_matter" && token.meta);

@@ -9,34 +9,18 @@ const MATCH_PATTERN = /\[\[(?<title>[^[\]|]+)(?:\|(?<label>[^[\]]+))?\]\]/g;
 const TOKEN_NAME = "wikilink";
 const LINK_CLASS = "text-ice-300 no-underline hover:underline hover:text-ice-200";
 
-export interface Options {
-  tokenName?: string;
-  linkClass?: string;
+export type Options = {
   prefix: string;
   collector: (link: Link) => void;
   contentPromises: Map<string, Promise<string>>;
-  isClient: boolean;
-}
-
-type ResolvedOptions = Required<Options>;
+} & ({ isClient: true; db: undefined } | { isClient: false; db: typeof import("$lib/api/db") });
 
 export const pluginWikilinks: PluginWithOptions<Options> = (mdIt, options) => {
-  const opts = Object.assign(
-    {
-      tokenName: TOKEN_NAME,
-      linkClass: LINK_CLASS,
-      prefix: "/wiki/",
-      collector: () => {},
-      isClient: false,
-      contentPromises: new Map(),
-    },
-    options ?? {},
-  );
-  mdIt.core.ruler.push(opts.tokenName, coreRule(opts));
-  mdIt.renderer.rules[opts.tokenName] = renderer(opts);
+  mdIt.core.ruler.push(TOKEN_NAME, coreRule);
+  mdIt.renderer.rules[TOKEN_NAME] = renderer(options!);
 };
 
-const coreRule: (opts: ResolvedOptions) => RuleCore = (opts) => (state) => {
+const coreRule: RuleCore = (state) => {
   for (let i = 0; i < state.tokens.length; i++) {
     if (state.tokens[i].type !== "inline") {
       continue;
@@ -55,7 +39,7 @@ const coreRule: (opts: ResolvedOptions) => RuleCore = (opts) => (state) => {
         .map((content, idx) => {
           MATCH_PATTERN.lastIndex = 0;
           return {
-            type: idx % 2 === 0 ? "text" : opts.tokenName,
+            type: idx % 2 === 0 ? "text" : TOKEN_NAME,
             content,
             attrs: idx % 2 === 0 ? undefined : MATCH_PATTERN.exec(content)?.groups,
           };
@@ -64,7 +48,7 @@ const coreRule: (opts: ResolvedOptions) => RuleCore = (opts) => (state) => {
         .map((item) => {
           const newToken = new state.Token(item.type, "", 0);
           newToken.content = item.content;
-          if (item.type === opts.tokenName) {
+          if (item.type === TOKEN_NAME) {
             newToken.attrSet("title", item.attrs!.title);
             newToken.attrSet("label", item.attrs!.label);
           }
@@ -75,25 +59,25 @@ const coreRule: (opts: ResolvedOptions) => RuleCore = (opts) => (state) => {
   }
 };
 
-const renderer: (opts: ResolvedOptions) => Renderer.RenderRule = (opts) => (tokens, idx) => {
+const renderer: (opts: Options) => Renderer.RenderRule = (opts) => (tokens, idx) => {
   const title = tokens[idx].attrGet("title")!;
   const label = tokens[idx].attrGet("label") ?? title;
   opts.collector({ title, label });
   if (opts.isClient)
-    return `<a target="_self" href="${opts.prefix}${title}" class="${opts.linkClass}">${label}</a>`;
+    return `<a target="_self" href="${opts.prefix}${title}" class="${LINK_CLASS}">${label}</a>`;
 
   let id: string;
   do {
     id = (Math.random() + 1).toString(36).substring(2, 9);
   } while (opts.contentPromises.has(id));
 
-  const linkColor = import("$lib/api/storage")
-    .then(({ getArticle }) => getArticle(title))
+  const linkColor = opts.db
+    .getArticle(title)
     .then((res) => res.ok)
     .catch(() => false)
     .then((exists) => (exists ? "" : " !text-rose-300"));
 
   opts.contentPromises.set(id, linkColor);
 
-  return `<a target="_self" href="${opts.prefix}${title}" class="${opts.linkClass}{%${id}%}">${label}</a>`;
+  return `<a target="_self" href="${opts.prefix}${title}" class="${LINK_CLASS}{%${id}%}">${label}</a>`;
 };

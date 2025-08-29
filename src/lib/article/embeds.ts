@@ -3,7 +3,6 @@ import dedent from "dedent";
 import { ArrowRight, Info } from "lucide-static";
 import type { PluginWithOptions } from "markdown-it";
 import type { Renderer } from "markdown-it/index.js";
-// import type { RuleBlock } from "markdown-it/lib/parser_block.mjs";
 import type { RuleCore } from "markdown-it/lib/parser_core.mjs";
 
 const TOKEN_NAME = "embed";
@@ -11,14 +10,13 @@ const TOKEN_NAME = "embed";
 const SPLIT_PATTERN = /(\{%\s*\w+(?:\s+(?:\w+|"[^"]*"))*\s*%\})/;
 const ARG_PATTERN = /^(\w+|"(?:\\"|[^"])+")/;
 
-export interface EmbedOptions {
+export type EmbedOptions = {
   contentPromises: Map<string, Promise<string>>;
-  isClient: boolean;
-}
+} & ({ isClient: true; db: undefined } | { isClient: false; db: typeof import("$lib/api/db") });
 
 export const pluginEmbed: PluginWithOptions<EmbedOptions> = (mdIt, options) => {
   mdIt.core.ruler.push(TOKEN_NAME, coreRule);
-  mdIt.renderer.rules[TOKEN_NAME] = renderer(options!.contentPromises, options!.isClient);
+  mdIt.renderer.rules[TOKEN_NAME] = renderer(options!);
 };
 
 const coreRule: RuleCore = (state) => {
@@ -71,14 +69,11 @@ const coreRule: RuleCore = (state) => {
   }
 };
 
-const renderer: (
-  promises: Map<string, Promise<string>>,
-  isClient: boolean,
-) => Renderer.RenderRule = (promises, isClient) => (tokens, idx) => {
+const renderer: (options: EmbedOptions) => Renderer.RenderRule = (opts) => (tokens, idx) => {
   const tok = tokens[idx] as unknown as { embedName: string; embedArgs: string[] };
   const embed = EMBEDS.find((e) => e.name === tok.embedName);
   if (embed === undefined) return `INVALID EMBED ${tok.embedName}`;
-  if (isClient)
+  if (opts.isClient)
     return dedent`
       <section class="not-prose bg-ice-300/10 rounded p-4 flex gap-4 items-center text-ice-600 italic">
         ${Info}
@@ -88,20 +83,20 @@ const renderer: (
   let id: string;
   do {
     id = (Math.random() + 1).toString(36).substring(2, 9);
-  } while (promises.has(id));
-  promises.set(id, Promise.resolve(embed.render(tok.embedArgs)));
+  } while (opts.contentPromises.has(id));
+  opts.contentPromises.set(id, Promise.resolve(embed.render(opts.db, tok.embedArgs)));
   return `{%${id}%}`;
 };
 
 interface Embed {
   name: string;
-  render(args: string[]): string | Promise<string>;
+  render(db: NonNullable<EmbedOptions["db"]>, args: string[]): string | Promise<string>;
 }
 
 const EMBEDS: Embed[] = [
   {
     name: "articles",
-    async render(args) {
+    async render(db, args) {
       const tag = args[0];
       const heading = args[1] ?? `Articles Tagged with: ${tag}`;
       const articles = await fetchByTag(tag);

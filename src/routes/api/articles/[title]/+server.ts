@@ -3,6 +3,7 @@ import { patchAndRenameArticle, patchArticle } from "$lib/api/storage";
 import { extractNames } from "$lib/article/diff";
 import { parse } from "$lib/article/parse";
 import type { RequestHandler } from "./$types";
+import * as db from "$lib/api/db";
 
 export const PATCH: RequestHandler = async (event) => {
   const name = event.params.title;
@@ -15,7 +16,7 @@ export const PATCH: RequestHandler = async (event) => {
 
   if (result.ok) {
     try {
-      const article = await parse(result.content);
+      const article = await parse(result.content, db);
       const mergeResult = await mergeIntoGraph(article, oldName);
       if (!mergeResult.ok) {
         console.error(mergeResult);

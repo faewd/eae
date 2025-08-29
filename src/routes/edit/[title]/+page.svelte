@@ -34,7 +34,7 @@
   let parsingErrors: ParserError[] = $state([]);
 
   $effect(() => {
-    parse(value, true, "/edit/")
+    parse(value, undefined, "/edit/")
       .then((article) => {
         preview = article;
         parsingErrors = [];
@@ -99,7 +99,7 @@
         error = body.error ?? "Unexpected error while saving.";
       } else {
         value = body.content;
-        const newArticle = await parse(value, true);
+        const newArticle = await parse(value, undefined);
         if (newArticle.title !== base.title) {
           window.location.href = `/editor/${newArticle.title}`;
         }

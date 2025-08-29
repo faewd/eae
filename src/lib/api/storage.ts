@@ -1,14 +1,14 @@
 import { applyPatch } from "diff";
-import { join } from "node:path";
 import fs from "node:fs/promises";
 import type { DBResult } from "./result";
+import { EAE_DATA_DIR } from "$env/static/private";
 
 type FSResult<E extends string> = DBResult<{ content: string }, E>;
 
-const basePath = join(import.meta.dirname, "../../../.data");
+const basePath = EAE_DATA_DIR;
 
 function getFilePath(name: string) {
-  return join(basePath, "articles", encodeURIComponent(name) + ".md");
+  return `${basePath}/articles/${encodeURIComponent(name)}.md`;
 }
 
 export async function getArticle(name: string): Promise<FSResult<"not-found">> {

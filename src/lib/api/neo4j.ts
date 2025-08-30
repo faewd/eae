@@ -84,6 +84,18 @@ export async function mergeIntoGraph(
         DELETE a
       `);
 
+      // Create any links the new version of the article has
+      await tx.run(
+        `//cypher
+          MATCH (a:Article {title: $article.title})
+          WITH a
+          UNWIND $article.links as link
+          MERGE (b:Article {title: link.title})
+          MERGE r=(a)-[:LINKS_TO { label: link.label }]->(b)
+      `,
+        { article },
+      );
+
       // Delete any tags this article already had
       await tx.run(
         `//cypher
@@ -100,18 +112,6 @@ export async function mergeIntoGraph(
         DELETE t
       `);
 
-      // Create any links the new version of the article has
-      await tx.run(
-        `//cypher
-          MATCH (a:Article {title: $article.title})
-          WITH a
-          UNWIND $article.links as link
-          MERGE (b:Article {title: link.title})
-          MERGE r=(a)-[:LINKS_TO { label: link.label }]->(b)
-      `,
-        { article },
-      );
-
       // Create any tags the new version of the article has
       await tx.run(
         `//cypher
@@ -122,6 +122,37 @@ export async function mergeIntoGraph(
           CREATE (t)-[:APPLIES_TO]->(a)
         `,
         { article, tags: article.metadata.tags },
+      );
+
+      // Delete any map pins associated with this article
+      await tx.run(
+        `//cypher
+          MATCH (a:Article {title: $article.title})
+          MATCH (p:MapPin) WHERE (p)-[:REFERS_TO]->(a)
+          DETACH DELETE p;
+        `,
+        { article },
+      );
+
+      // Create map pins for this article
+      await tx.run(
+        `//cypher
+          MATCH (a:Article {title: $article.title})
+          WITH a
+          UNWIND $pins as pin
+          CREATE (:MapPin {
+              article: $article.title,
+              label: pin.label,
+              coords: pin.coords,
+              type: pin.type,
+              map: pin.map,
+              desc: pin.desc
+            })-[:REFERS_TO]->(a)
+        `,
+        {
+          article,
+          pins: article.metadata.pins.map((p) => ({ ...p, label: p.label ?? article.title })),
+        },
       );
     });
 
@@ -223,5 +254,24 @@ export async function listSimilarTags(tag: string) {
   return records.map((r) => ({
     label: r.get("label"),
     count: r.get("count").toNumber(),
+  }));
+}
+
+export async function getPinsForMap(map: string) {
+  const driver = await ensureDriver();
+  const { records } = await driver.executeQuery(
+    `//cypher
+      MATCH (p:MapPin)
+      WHERE p.map = $map
+      RETURN p.article as article, p.label as label, p.desc as desc, p.coords as coords, p.type as type;
+    `,
+    { map },
+  );
+  return records.map((r) => ({
+    article: r.get("article"),
+    label: r.get("label"),
+    desc: r.get("desc"),
+    coords: r.get("coords"),
+    type: r.get("type"),
   }));
 }

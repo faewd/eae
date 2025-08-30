@@ -1,10 +1,10 @@
 import MarkdownIt from "markdown-it";
 import pluginFrontMatter from "markdown-it-front-matter";
 import { alert as pluginAlert } from "@mdit/plugin-alert";
-import * as yaml from "yaml";
-import type { Article, ArticleMetadata, Link } from "./types";
+import type { Article, Link } from "./types";
 import { pluginWikilinks } from "./wikilinks";
 import { pluginEmbed } from "./embeds";
+import { parseMetadata, type ArticleMetadata } from "./metadata";
 
 export type Span = { offset: number; length: number };
 
@@ -52,7 +52,7 @@ export async function parse(
 
   const tokens = md.parse(source, {});
   const frontmatter = tokens.find((token) => token.type === "front_matter" && token.meta);
-  const metadataRaw = parseFrontmatter(frontmatter?.meta);
+  const metadataRaw = parseMetadata(frontmatter?.meta);
   const metadata = await renderMetadata(metadataRaw, md, contentPromises);
   const content = await fulfilContentPromises(
     md.render(source).replace(/<h1>[^<]+<\/h1>/g, ""),
@@ -75,16 +75,6 @@ function extractTitle(source: string): string {
       "Articles may not have more than one title.",
     );
   return matches[0][0].substring(1).trim();
-}
-
-const FM_DEFAULTS = {
-  tags: [],
-};
-
-function parseFrontmatter(source: string | undefined): ArticleMetadata {
-  const properties: Partial<ArticleMetadata> = source !== undefined ? yaml.parse(source) : {};
-
-  return Object.assign({}, FM_DEFAULTS, properties);
 }
 
 async function fulfilContentPromises(

@@ -1,9 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import Map from "ol/Map";
-  import TileLayer from "ol/layer/Tile";
-  import View from "ol/View";
-  import XYZ from "ol/source/XYZ";
+  import "leaflet/dist/leaflet.css";
 
   interface Props {
     name: string;
@@ -11,24 +8,38 @@
 
   let { name }: Props = $props();
 
-  onMount(() => {
-    new Map({
-      target: "map",
-      layers: [
-        new TileLayer({
-          source: new XYZ({
-            url: `/map-tiles/${name}/{z}/{x}/{y}.png`,
-          }),
-        }),
+  onMount(async () => {
+    const { Map, TileLayer } = await import("leaflet");
+    const map = new Map("map", {
+      center: [0, 0],
+      zoomControl: false,
+      zoomSnap: 0,
+      zoomDelta: 0.25,
+      attributionControl: false,
+      maxBounds: [
+        [-100, -180],
+        [100, 180],
       ],
-      view: new View({
-        center: [0, 0],
-        zoom: 2,
-        maxZoom: 5,
-        minZoom: 0,
-      }),
+      maxBoundsViscosity: 1,
+    }).setView([0, 0], 2.75);
+
+    const tiles = new TileLayer(`/map-tiles/${name}/{z}/{x}/{y}.png`, {
+      maxZoom: 5,
+      minZoom: 2.75,
+      noWrap: true,
+      bounds: [
+        [-100, -180],
+        [100, 180],
+      ],
     });
+    tiles.addTo(map);
   });
 </script>
 
 <div id="map" class="h-screen max-h-full w-screen max-w-full"></div>
+
+<style>
+  :global(.leaflet-container) {
+    background-color: #152557;
+  }
+</style>

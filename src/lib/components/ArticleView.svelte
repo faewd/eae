@@ -81,7 +81,7 @@
         Tags
       </h2>
       <ul class="not-prose flex gap-2">
-        {#each article.metadata.tags as tag (tag)}
+        {#each article.metadata.tags.toSorted() as tag, i (i + tag)}
           <li>
             <a
               href="/tag/{tag}"

@@ -9,10 +9,13 @@
   };
 
   let tags: { page: Tag[]; total: number } | null = $state(null);
-  let error: string | null = $state(null);
+  let tagsError: string | null = $state(null);
   let page = $state(0);
   let pageSize = $state(25);
   let maxPage = $derived.by(() => Math.floor((tags?.total ?? 0) / pageSize));
+
+  let untagged: { title: string }[] = $state([]);
+  let untaggedError: string | null = $state(null);
 
   $effect(() => {
     fetch(`/api/tags?page=${page}&size=${pageSize}`)
@@ -22,10 +25,27 @@
       })
       .then((data) => {
         tags = data.tags;
-        error = null;
+        tagsError = null;
       })
       .catch((err) => {
-        error = `${err}`;
+        tagsError = `${err}`;
+      });
+  });
+
+  $effect(() => {
+    fetch(`/api/tags/untagged`)
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          untagged = data.articles;
+          untaggedError = null;
+        } else {
+          throw res;
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        untaggedError = "Failed to fetch untagged articles.";
       });
   });
 </script>
@@ -37,10 +57,10 @@
     <h2 class="mb-4 border-b-2 border-ice-800 font-heading text-2xl font-bold text-ice-300">
       All Tags
     </h2>
-    {#if error !== null}
-      {error}
+    {#if tagsError !== null}
+      <p class="text-rose-300 italic">{tagsError}</p>
     {:else if tags === null}
-      Loading...
+      <p class="text-zinc-500 italic">Loading tags...</p>
     {:else}
       <ul class="flex flex-col gap-2 rounded bg-zinc-950 p-4">
         {#each tags.page as tag (tag.label)}
@@ -85,5 +105,20 @@
     <h2 class="mb-4 border-b-2 border-ice-800 font-heading text-2xl font-bold text-ice-300">
       Untagged Articles
     </h2>
+    {#if untaggedError !== null}
+      <p class="text-rose-300 italic">{untaggedError}</p>
+    {:else if untagged.length === 0}
+      <p class="text-zinc-500 italic">No articles to show.</p>
+    {:else}
+      <ul class="flex flex-col gap-2 rounded bg-zinc-950 p-4">
+        {#each untagged as article (article.title)}
+          <li>
+            <NavLink to={`/wiki/${article.title}`} class="py-2">
+              {article.title}
+            </NavLink>
+          </li>
+        {/each}
+      </ul>
+    {/if}
   </section>
 </Page>

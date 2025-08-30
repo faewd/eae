@@ -65,7 +65,7 @@ export async function mergeIntoGraph(
       `,
         {
           title: oldName ?? article.title,
-          article: { title: article.title, content: article.content },
+          article: { title: article.title, content: article.content, placeholder: false },
         },
       );
 
@@ -87,10 +87,11 @@ export async function mergeIntoGraph(
       // Create any links the new version of the article has
       await tx.run(
         `//cypher
-          MATCH (a:Article {title: $article.title})
+          MATCH (a:Article { title: $article.title })
           WITH a
           UNWIND $article.links as link
-          MERGE (b:Article {title: link.title})
+          MERGE (b:Article { title: link.title })
+          ON CREATE SET b.placeholder = true
           MERGE r=(a)-[:LINKS_TO { label: link.label }]->(b)
       `,
         { article },
@@ -174,6 +175,7 @@ export async function searchArticles(query: string): Promise<{ title: string }[]
   const { records } = await driver.executeQuery(
     `//cypher
       CALL db.index.fulltext.queryNodes("article_text_idx", $query) YIELD node
+      WHERE node.placeholder = false
       RETURN node.title as title
     `,
     {
@@ -187,6 +189,22 @@ export async function searchArticles(query: string): Promise<{ title: string }[]
   return records.map((record) => ({
     title: record.get("title"),
   }));
+}
+
+export async function listUntaggedArticles() {
+  const driver = await ensureDriver();
+  const { records } = await driver.executeQuery(
+    `//cypher
+      MATCH (a:Article)
+      WHERE NOT a.placeholder AND NOT EXISTS {
+        (:Tag)-[:APPLIES_TO]->(a)
+      }
+      ORDER BY a.title ASC
+      RETURN a.title as title
+    `,
+  );
+
+  return records.map((r) => ({ title: r.get("title") }));
 }
 
 export async function listTags(page = 0, size = 25) {
@@ -223,6 +241,7 @@ export async function fetchByTag(tag: string) {
     `//cypher
       MATCH (t:Tag) WHERE t.label = $tag
       MATCH (a:Article) WHERE (t)-[:APPLIES_TO]->(a)
+      ORDER BY a.title ASC
       RETURN a.title as title
     `,
     { tag },

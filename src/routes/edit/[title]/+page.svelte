@@ -9,13 +9,14 @@
     Save,
     Shell,
     SquareArrowOutUpRight,
+    Trash,
   } from "@lucide/svelte";
   import { diff, isEmpty } from "$lib/article/diff";
   import { parse, ParserError } from "$lib/article/parse";
   import cx from "$lib/utils/cx";
   import type { PageProps } from "./$types";
   import RenameModal from "./RenameModal.svelte";
-  import { afterNavigate } from "$app/navigation";
+  import { afterNavigate, goto } from "$app/navigation";
   import type { Article } from "$lib/article/types";
 
   let { data: article }: PageProps = $props();
@@ -114,6 +115,29 @@
       status = null;
     }
   }
+
+  let deleting = $state(false);
+
+  async function deleteArticle() {
+    const msg = `Are you sure you want to delete the article "${base.title}"? This action is irreversible.`;
+    if (!confirm(msg)) return;
+
+    const title = encodeURIComponent(base.title);
+
+    try {
+      deleting = true;
+      const res = await fetch(`/api/articles/${title}`, { method: "DELETE" });
+      console.log(await res.json());
+      if (res.ok) return goto("/");
+      console.error(res.status, res.statusText, await res.text());
+      error = "Failed to delete the article.";
+    } catch (err) {
+      console.error(err);
+      error = "Failed to delete the article.";
+    } finally {
+      deleting = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -149,16 +173,26 @@
       {/if}
     </div>
     {#if error !== null}
-      <div class="ml-auto whitespace-nowrap text-rose-400">
+      <div class="whitespace-nowrap text-rose-400">
         <OctagonAlert class="inline" />
         {error}
       </div>
     {:else if hasChanged}
-      <div class="ml-auto whitespace-nowrap text-rose-300/70">
+      <div class="whitespace-nowrap text-rose-300/70">
         <CloudAlert class="inline" />
         Unsaved Changes
       </div>
     {/if}
+    <button
+      class="ml-auto cursor-pointer rounded-sm bg-rose-400/30 p-1 text-rose-300 transition-colors hover:bg-rose-400/50 hover:text-rose-200"
+      onclick={() => deleteArticle()}
+    >
+      {#if deleting}
+        <Shell size={24} class="animate-spin" />
+      {:else}
+        <Trash size={24} />
+      {/if}
+    </button>
   </div>
   <div class="relative flex h-[calc(100%-12*var(--spacing))]">
     <MonacoEditor

@@ -1,5 +1,5 @@
-import { mergeIntoGraph } from "$lib/api/neo4j";
-import { patchAndRenameArticle, patchArticle } from "$lib/api/storage";
+import { mergeIntoGraph, removeFromGraph } from "$lib/api/neo4j";
+import { deleteArticle, patchAndRenameArticle, patchArticle } from "$lib/api/storage";
 import { extractNames } from "$lib/article/diff";
 import { parse } from "$lib/article/parse";
 import type { RequestHandler } from "./$types";
@@ -29,4 +29,11 @@ export const PATCH: RequestHandler = async (event) => {
   }
 
   return Response.json(result, { status: result.ok ? 200 : 400 });
+};
+
+export const DELETE: RequestHandler = async (event) => {
+  const title = event.params.title;
+  await removeFromGraph(title);
+  await deleteArticle(title);
+  return Response.json({ ok: true }, { status: 200 });
 };

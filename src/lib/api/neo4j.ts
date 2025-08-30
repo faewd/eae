@@ -170,6 +170,18 @@ export async function mergeIntoGraph(
   }
 }
 
+export async function removeFromGraph(title: string) {
+  const driver = await ensureDriver();
+  driver.executeQuery(
+    `//cypher
+      MATCH (a:Article { title: $title })
+      DETACH DELETE a;
+    `,
+    { title },
+    { database: "neo4j" },
+  );
+}
+
 export async function searchArticles(query: string): Promise<{ title: string }[]> {
   const driver = await ensureDriver();
   const { records } = await driver.executeQuery(

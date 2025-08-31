@@ -84,7 +84,7 @@
             </NavLink>
           </li>
           <li>
-            <NavLink to="/tag/Location">
+            <NavLink to="/wiki/Locations">
               <MapPin class="text-amber-100" />
               Locations
             </NavLink>

@@ -4,15 +4,16 @@
   import type { ClassValue } from "clsx";
   import "@mdit/plugin-alert/style";
   import SearchBar from "./SearchBar.svelte";
-  import { Braces, Tags } from "@lucide/svelte";
+  import { Braces, Pencil, Tags } from "@lucide/svelte";
 
   interface Props {
     article: Article;
     searchbar?: boolean;
+    editable?: boolean;
     class?: ClassValue;
   }
 
-  let { article, searchbar, ...props }: Props = $props();
+  let { article, searchbar, editable, ...props }: Props = $props();
 </script>
 
 <article
@@ -27,6 +28,16 @@
       <SearchBar class="max-w-1/2" />
     {/if}
   </header>
+
+  {#if editable}
+    <a
+      rel="_self"
+      href="/edit/{article.title}"
+      class="not-prose absolute top-14 left-2 cursor-pointer rounded bg-amber-950 p-1 text-amber-200 transition-colors hover:bg-amber-900 hover:text-amber-100"
+    >
+      <Pencil />
+    </a>
+  {/if}
 
   <section>
     {#if article.metadata.infobox}

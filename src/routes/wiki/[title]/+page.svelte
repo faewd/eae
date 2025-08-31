@@ -11,5 +11,5 @@
 </svelte:head>
 
 <Page>
-  <ArticleView {article} searchbar />
+  <ArticleView {article} searchbar editable />
 </Page>

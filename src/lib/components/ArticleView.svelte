@@ -80,18 +80,22 @@
         <Tags />
         Tags
       </h2>
-      <ul class="not-prose flex gap-2">
-        {#each article.metadata.tags.toSorted() as tag, i (i + tag)}
-          <li>
-            <a
-              href="/tag/{tag}"
-              class="rounded bg-zinc-800 px-2 py-1 font-bold text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-zinc-300 hover:underline"
-            >
-              {tag}
-            </a>
-          </li>
-        {/each}
-      </ul>
+      {#if article.metadata.tags.length > 0}
+        <ul class="not-prose flex gap-2">
+          {#each article.metadata.tags.toSorted() as tag, i (i + tag)}
+            <li>
+              <a
+                href="/tag/{tag}"
+                class="rounded bg-zinc-800 px-2 py-1 font-bold text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-zinc-300 hover:underline"
+              >
+                {tag}
+              </a>
+            </li>
+          {/each}
+        </ul>
+      {:else}
+        <p class="text-zinc-400 italic">This article is untagged.</p>
+      {/if}
     </section>
     <section>
       <h2 class="!mb-3 flex items-center gap-2 !border-b-zinc-700 !text-zinc-500">

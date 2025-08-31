@@ -20,7 +20,7 @@
       <ol class="flex flex-col gap-2">
         {#each data.results as article (article.title)}
           <li>
-            <a target="_self" href={"/wiki/" + encodeURIComponent(article.title)}>
+            <a href={"/wiki/" + encodeURIComponent(article.title)}>
               <article
                 class="group flex justify-between rounded bg-zinc-800 p-2 transition-colors hover:bg-zinc-700"
               >

@@ -63,8 +63,7 @@ const renderer: (opts: Options) => Renderer.RenderRule = (opts) => (tokens, idx)
   const title = tokens[idx].attrGet("title")!;
   const label = tokens[idx].attrGet("label") ?? title;
   opts.collector({ title, label });
-  if (opts.isClient)
-    return `<a target="_self" href="${opts.prefix}${title}" class="${LINK_CLASS}">${label}</a>`;
+  if (opts.isClient) return `<a href="${opts.prefix}${title}" class="${LINK_CLASS}">${label}</a>`;
 
   let id: string;
   do {
@@ -79,5 +78,5 @@ const renderer: (opts: Options) => Renderer.RenderRule = (opts) => (tokens, idx)
 
   opts.contentPromises.set(id, linkColor);
 
-  return `<a target="_self" href="${opts.prefix}${title}" class="${LINK_CLASS}{%${id}%}">${label}</a>`;
+  return `<a href="${opts.prefix}${title}" class="${LINK_CLASS}{%${id}%}">${label}</a>`;
 };

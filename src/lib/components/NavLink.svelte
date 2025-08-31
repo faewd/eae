@@ -13,7 +13,6 @@
 </script>
 
 <a
-  rel="_self"
   href={to}
   class={cx(
     "group flex items-center gap-2 rounded bg-zinc-900 px-4 py-3 font-bold transition-colors hover:bg-zinc-800 hover:text-zinc-100",

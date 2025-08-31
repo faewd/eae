@@ -31,7 +31,6 @@
 
   {#if editable}
     <a
-      rel="_self"
       href="/edit/{article.title}"
       class="not-prose absolute top-14 left-2 cursor-pointer rounded bg-amber-950 p-1 text-amber-200 transition-colors hover:bg-amber-900 hover:text-amber-100"
     >

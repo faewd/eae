@@ -20,7 +20,6 @@
         Enna's Auriinic Encyclopædia is a comprehensive guide to the Auriin campaign setting for
         <span class="text-red-300">Dungeons &amp; Dragons</span>, drawn straight from the notes of
         <a
-          target="_self"
           href="/wiki/Enna Berevian"
           class="text-ice-200 no-underline transition-colors hover:text-ice-100 hover:underline"
           >Enna Berevian</a

@@ -104,7 +104,7 @@ const EMBEDS: Embed[] = [
         .map(
           ({ title }) => dedent`
           <li>
-            <a target="_self" href="/wiki/${encodeURIComponent(title)}">
+            <a href="/wiki/${encodeURIComponent(title)}">
               <article
                 class="group flex justify-between rounded bg-zinc-800 p-2 transition-colors hover:bg-zinc-700"
               >

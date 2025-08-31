@@ -6,6 +6,7 @@
     Flag,
     House,
     MapPin,
+    MapPinned,
     PanelLeftClose,
     PanelLeftOpen,
     PersonStanding,
@@ -56,6 +57,12 @@
             <NavLink to="/tags">
               <Tags />
               Tag Viewer
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/map/Auriin">
+              <MapPinned />
+              World Map
             </NavLink>
           </li>
         </ul>

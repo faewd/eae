@@ -7,10 +7,14 @@
   let { data }: PageProps = $props();
 </script>
 
+<svelte:head>
+  <title>Search | {data.query}</title>
+</svelte:head>
+
 <Page>
   <section>
     <h1 class="mb-6 font-heading text-4xl font-bold text-ice-300">Search Articles</h1>
-    <SearchBar query={data?.query} />
+    <SearchBar query={data.query} />
   </section>
   <section>
     <h2 class="mt-8 mb-4 font-heading text-2xl font-bold text-ice-600">Results</h2>

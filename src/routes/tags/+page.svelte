@@ -50,6 +50,10 @@
   });
 </script>
 
+<svelte:head>
+  <title>Tag Viewer</title>
+</svelte:head>
+
 <Page>
   <h1 class="mb-8 font-heading text-4xl font-bold text-ice-300">Tags</h1>
 

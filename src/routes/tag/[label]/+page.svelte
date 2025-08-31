@@ -6,6 +6,10 @@
   let { data } = $props();
 </script>
 
+<svelte:head>
+  <title>Tag | {data.tag}</title>
+</svelte:head>
+
 <Page>
   <h1 class="class mb-8 flex items-center gap-2 font-heading text-4xl font-bold text-ice-300">
     <Tag class="text-[4rem] text-ice-800" />

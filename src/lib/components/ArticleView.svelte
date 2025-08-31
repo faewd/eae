@@ -131,6 +131,12 @@
         }
       }
 
+      & :global(.markdown-alert),
+      & :global(:where(p):not(:where([class~="not-prose"], [class~="not-prose"] *))) {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+      }
+
       & :global(.markdown-alert) {
         border-radius: var(--radius-md);
         border: none !important;

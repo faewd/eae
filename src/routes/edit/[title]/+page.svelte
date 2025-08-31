@@ -5,6 +5,8 @@
     CloudAlert,
     Eye,
     EyeClosed,
+    History,
+    Info,
     OctagonAlert,
     Save,
     Shell,
@@ -16,8 +18,10 @@
   import cx from "$lib/utils/cx";
   import type { PageProps } from "./$types";
   import RenameModal from "./RenameModal.svelte";
-  import { afterNavigate, goto } from "$app/navigation";
+  import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
   import type { Article } from "$lib/article/types";
+  import type { NavigationTarget } from "@sveltejs/kit";
+  import ChangesModal from "./ChangesModal.svelte";
 
   let { data: article }: PageProps = $props();
 
@@ -68,6 +72,9 @@
   let status: string | null = $state(null);
   let lastSync: Date = $state(new Date());
   let showRenameModal = $state(false);
+  let showChangesModal = $state(false);
+  let navigationTarget: NavigationTarget | null = $state(null);
+  let forceNavigate = $state(false);
 
   async function saveArticle(force = false) {
     if (preview === null) {
@@ -138,6 +145,13 @@
       deleting = false;
     }
   }
+
+  beforeNavigate((event) => {
+    if (forceNavigate || !hasChanged) return;
+    event.cancel();
+    showChangesModal = true;
+    navigationTarget = event.to;
+  });
 </script>
 
 <svelte:head>
@@ -165,22 +179,29 @@
         <Save size={24} />
       {/if}
     </button>
-    <div class="mr-4 text-sm text-zinc-500 italic">
+    <div class="mr-4 text-sm leading-[1.2] text-zinc-500 italic">
+      {#if hasChanged}
+        <div class="mt-px whitespace-nowrap text-rose-300/70">
+          <CloudAlert class="-mt-1 inline" size="16" />
+          Unsaved Changes
+        </div>
+      {/if}
       {#if status !== null}
-        {status}
+        <div>
+          <Info class="-mt-1 inline" size="16" />
+          {status}
+        </div>
       {:else}
-        Last saved: {lastSync.toLocaleTimeString()}
+        <div>
+          <History class="inline" size="16" />
+          Last saved: {lastSync.toLocaleTimeString()}
+        </div>
       {/if}
     </div>
     {#if error !== null}
       <div class="whitespace-nowrap text-rose-400">
         <OctagonAlert class="inline" />
         {error}
-      </div>
-    {:else if hasChanged}
-      <div class="whitespace-nowrap text-rose-300/70">
-        <CloudAlert class="inline" />
-        Unsaved Changes
       </div>
     {/if}
     <button
@@ -240,5 +261,19 @@
     new={preview?.title ?? "Invalid"}
     old={base.title}
     onconfirm={() => saveArticle(true)}
+  />
+
+  <ChangesModal
+    bind:show={showChangesModal}
+    title={base.title}
+    onsave={() => {
+      saveArticle(true);
+      forceNavigate = true;
+      goto(navigationTarget!.url);
+    }}
+    ondiscard={() => {
+      forceNavigate = true;
+      goto(navigationTarget!.url);
+    }}
   />
 </main>

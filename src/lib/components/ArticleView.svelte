@@ -22,7 +22,7 @@
   )}
 >
   <header class="flex items-start justify-between gap-4">
-    <h1>{article.title}</h1>
+    <h1 class="mb-0">{article.title}</h1>
     {#if searchbar}
       <SearchBar class="max-w-1/2" />
     {/if}

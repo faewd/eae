@@ -119,7 +119,7 @@ export const auth0 = new ServerClient<StoreOptions>({
   clientId: env.AUTH0_CLIENT_ID,
   clientSecret: env.AUTH0_CLIENT_SECRET,
   authorizationParams: {
-    redirect_uri: env.AUTH0_REDIRECT_URI,
+    redirect_uri: new URL("auth/callback", env.BASE_URL).toString(),
   },
   transactionStore: new StatelessTransactionStore(),
   stateStore: new StatelessStateStore({ secret: env.AUTH0_STORE_SECRET }),

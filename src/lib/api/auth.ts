@@ -5,13 +5,7 @@ import {
   type StateData,
   type TransactionData,
 } from "@auth0/auth0-server-js";
-import {
-  AUTH0_CLIENT_ID,
-  AUTH0_CLIENT_SECRET,
-  AUTH0_DOMAIN,
-  AUTH0_REDIRECT_URI,
-  AUTH0_STORE_SECRET,
-} from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import type { Cookies } from "@sveltejs/kit";
 import { upsertUser } from "./neo4j";
 
@@ -121,14 +115,14 @@ class StatelessStateStore extends AbstractStateStore<StoreOptions> {
 }
 
 export const auth0 = new ServerClient<StoreOptions>({
-  domain: AUTH0_DOMAIN,
-  clientId: AUTH0_CLIENT_ID,
-  clientSecret: AUTH0_CLIENT_SECRET,
+  domain: env.AUTH0_DOMAIN,
+  clientId: env.AUTH0_CLIENT_ID,
+  clientSecret: env.AUTH0_CLIENT_SECRET,
   authorizationParams: {
-    redirect_uri: AUTH0_REDIRECT_URI,
+    redirect_uri: env.AUTH0_REDIRECT_URI,
   },
   transactionStore: new StatelessTransactionStore(),
-  stateStore: new StatelessStateStore({ secret: AUTH0_STORE_SECRET }),
+  stateStore: new StatelessStateStore({ secret: env.AUTH0_STORE_SECRET }),
 });
 
 export interface User {

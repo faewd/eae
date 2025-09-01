@@ -14,11 +14,11 @@ export const load: PageServerLoad = async ({ params, parent }) => {
   const readResult = await getArticle(params.title);
 
   if (readResult.ok) {
-    return await parse(readResult.content, db);
+    return { article: await parse(readResult.content, db) };
   }
 
   const writeResult = await writeArticle(params.title, makeDefaultArticle(params.title));
-  if (writeResult.ok) return await parse(writeResult.content, db);
+  if (writeResult.ok) return { article: await parse(writeResult.content, db) };
 
   return error(500, writeResult.error);
 };

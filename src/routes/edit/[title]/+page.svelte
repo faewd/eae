@@ -23,7 +23,8 @@
   import type { NavigationTarget } from "@sveltejs/kit";
   import ChangesModal from "./ChangesModal.svelte";
 
-  let { data: article }: PageProps = $props();
+  let { data }: PageProps = $props();
+  let article = data.article;
 
   let editor: MonacoEditor | null = $state(null);
 

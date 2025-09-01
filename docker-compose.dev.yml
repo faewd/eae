@@ -7,4 +7,6 @@ services:
       - 7474:7474
       - 7687:7687
     volumes:
-      - ./.data/graph:/data
+      - type: bind
+        source: $EAE_DATA_DIR/graph
+        target: /data

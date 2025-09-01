@@ -1,4 +1,3 @@
-import { fetchByTag } from "$lib/api/neo4j";
 import dedent from "dedent";
 import { ArrowRight, Info } from "lucide-static";
 import type { PluginWithOptions } from "markdown-it";
@@ -99,7 +98,7 @@ const EMBEDS: Embed[] = [
     async render(db, args) {
       const tag = args[0];
       const heading = args[1] ?? `Articles Tagged with: ${tag}`;
-      const articles = await fetchByTag(tag);
+      const articles = await db.fetchByTag(tag);
       const articlesHtml = articles
         .map(
           ({ title }) => dedent`

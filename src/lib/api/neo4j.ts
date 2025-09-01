@@ -2,15 +2,18 @@ import type { Article } from "$lib/article/types";
 import neo4j, { Integer, type Driver } from "neo4j-driver";
 import type { DBResult } from "./result";
 import type { User } from "./auth";
+import { env } from "$env/dynamic/private";
 
 type N4jResult<E extends string> = DBResult<Record<never, never>, E>;
 
 let _driver: Driver | null = null;
 
+const database = env.NEO4J_DATABASE ?? "neo4j";
+
 export async function connect(): Promise<Driver> {
-  const URI = process.env.NEO4J_URI ?? "neo4j://localhost";
-  const USER = process.env.NEO4J_USERNAME ?? "neo4j";
-  const PASS = process.env.NEO4J_USERNAME ?? "password";
+  const URI = env.NEO4J_URI ?? "neo4j://localhost";
+  const USER = env.NEO4J_USERNAME ?? "neo4j";
+  const PASS = env.NEO4J_PASSWORD ?? "password";
   const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASS));
   const serverInfo = await driver.getServerInfo();
   console.log(`Connected to ${serverInfo.agent} on ${serverInfo.address}`);
@@ -25,7 +28,7 @@ async function ensureDriver(): Promise<Driver> {
 
 export async function init() {
   const driver = await ensureDriver();
-  const session = driver.session({ database: "neo4j" });
+  const session = driver.session({ database });
   try {
     await session.executeWrite(async (tx) => {
       await tx.run(`//cypher
@@ -54,7 +57,7 @@ export async function mergeIntoGraph(
   oldName?: string,
 ): Promise<N4jResult<"n4j-query-error">> {
   const driver = await ensureDriver();
-  const session = driver.session({ database: "neo4j" });
+  const session = driver.session({ database });
   try {
     await session.executeWrite(async (tx) => {
       // Create or Update Article
@@ -179,7 +182,7 @@ export async function removeFromGraph(title: string) {
       DETACH DELETE a;
     `,
     { title },
-    { database: "neo4j" },
+    { database },
   );
 }
 
@@ -197,7 +200,7 @@ export async function searchArticles(query: string): Promise<{ title: string }[]
         .map((word) => word + "~")
         .join(" "),
     },
-    { database: "neo4j" },
+    { database },
   );
   return records.map((record) => ({
     title: record.get("title"),
@@ -235,7 +238,7 @@ export async function listTags(page = 0, size = 25) {
       RETURN tag.label as label, usages, articles, total;
     `,
     { offset: new Integer(page * size), limit: new Integer(size) },
-    { database: "neo4j" },
+    { database },
   );
   return {
     total: records[0]?.get("total")?.toNumber() ?? 0,
@@ -258,7 +261,7 @@ export async function fetchByTag(tag: string) {
       RETURN a.title as title
     `,
     { tag },
-    { database: "neo4j" },
+    { database },
   );
 
   return records.map((record) => ({
@@ -280,7 +283,7 @@ export async function listSimilarTags(tag: string) {
       RETURN label, times as count;
     `,
     { tag },
-    { database: "neo4j" },
+    { database },
   );
 
   return records.map((r) => ({
@@ -318,7 +321,7 @@ export async function upsertUser(name: User["name"], icon: User["icon"]): Promis
       RETURN u.name as name, u.icon as icon, u.isAdmin as isAdmin
     `,
     { user: { name, icon } },
-    { database: "neo4j" },
+    { database },
   );
 
   if (records.length !== 1) {

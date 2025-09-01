@@ -40,7 +40,7 @@
   let parsingErrors: ParserError[] = $state([]);
 
   $effect(() => {
-    parse(value, undefined, "/edit/")
+    parse(value, undefined)
       .then((article) => {
         preview = article;
         parsingErrors = [];

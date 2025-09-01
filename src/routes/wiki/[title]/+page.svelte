@@ -4,7 +4,7 @@
   import type { PageProps } from "./$types";
 
   let { data }: PageProps = $props();
-  let { user, article } = data;
+  let { user, article } = $derived(data);
 </script>
 
 <svelte:head>

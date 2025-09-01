@@ -32,7 +32,7 @@
   {#if editable}
     <a
       href="/edit/{article.title}"
-      class="not-prose static top-14 left-2 cursor-pointer rounded bg-amber-950 p-1 text-amber-200 transition-colors hover:bg-amber-900 hover:text-amber-100"
+      class="not-prose fixed top-14 left-2 cursor-pointer rounded bg-amber-950 p-1 text-amber-200 transition-colors hover:bg-amber-900 hover:text-amber-100"
     >
       <Pencil />
     </a>

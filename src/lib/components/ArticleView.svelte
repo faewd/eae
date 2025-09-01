@@ -57,7 +57,8 @@
             </h3>
           {:else if item.kind === "fact"}
             <span class="font-bold">{item.label}</span>
-            <span>{item.content}</span>
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+            <span>{@html item.content}</span>
           {:else if item.kind === "list"}
             <span class="font-bold">{item.label}</span>
             {#if item.delimited}

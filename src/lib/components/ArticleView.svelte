@@ -18,21 +18,21 @@
 
 <article
   class={cx(
-    "prose flex h-full w-full max-w-full flex-col bg-zinc-900 p-4 prose-zinc prose-invert prose-headings:mr-auto prose-headings:overflow-hidden prose-headings:font-heading prose-headings:text-ice-300 prose-h2:border-b-2 prose-h2:border-b-ice-800",
+    "prose flex h-full w-full max-w-full flex-col bg-zinc-900 p-2 prose-zinc prose-invert lg:p-4 prose-headings:mr-auto prose-headings:overflow-hidden prose-headings:font-heading prose-headings:text-ice-300 prose-h2:border-b-2 prose-h2:border-b-ice-800",
     props.class,
   )}
 >
-  <header class="flex items-start justify-between gap-4">
-    <h1 class="mb-0">{article.title}</h1>
+  <header class="flex flex-col-reverse items-end justify-between gap-4 lg:flex-row lg:items-start">
+    <h1 class="!m-0 inline-block">{article.title}</h1>
     {#if searchbar}
-      <SearchBar class="max-w-1/2" />
+      <SearchBar class="max-w-[calc(100%-12*var(--spacing))] lg:max-w-1/2" />
     {/if}
   </header>
 
   {#if editable}
     <a
       href="/edit/{article.title}"
-      class="not-prose fixed top-14 left-2 cursor-pointer rounded bg-amber-950 p-1 text-amber-200 transition-colors hover:bg-amber-900 hover:text-amber-100"
+      class="not-prose fixed top-2 left-2 flex size-10 cursor-pointer items-center justify-center rounded bg-amber-950 text-amber-200 transition-colors hover:bg-amber-900 hover:text-amber-100 lg:top-14 lg:size-8"
     >
       <Pencil />
     </a>

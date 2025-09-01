@@ -9,7 +9,7 @@
 </script>
 
 <main class="absolute flex min-h-full w-full justify-center pb-12">
-  <div class="mt-10 max-w-[75ch] flex-grow">
+  <div class="max-w-[75ch] flex-grow lg:mt-10">
     {@render children()}
   </div>
 </main>

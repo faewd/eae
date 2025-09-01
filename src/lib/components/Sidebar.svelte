@@ -171,7 +171,7 @@
     </div>
 
     <button
-      class="absolute top-0 -right-12 flex size-12 cursor-pointer items-center justify-center rounded-br bg-zinc-950 text-ice-300 transition-colors hover:bg-ice-950"
+      class="absolute -right-12 bottom-0 flex size-12 cursor-pointer items-center justify-center rounded-br bg-zinc-950 text-ice-300 transition-colors hover:bg-ice-950 lg:top-0"
       onclick={() => (visible = !visible)}
     >
       <div class="relative size-6">

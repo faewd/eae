@@ -1,9 +1,8 @@
-import { getArticle, writeArticle } from "$lib/api/storage";
+import { getArticle } from "$lib/api/storage";
 import { parse } from "$lib/article/parse";
 import * as db from "$lib/api/db";
-import dedent from "dedent";
 import type { PageServerLoad } from "./$types";
-import { error } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, parent }) => {
   const { user } = await parent();
@@ -17,21 +16,5 @@ export const load: PageServerLoad = async ({ params, parent }) => {
     return { article: await parse(readResult.content, db) };
   }
 
-  const writeResult = await writeArticle(params.title, makeDefaultArticle(params.title));
-  if (writeResult.ok) return { article: await parse(writeResult.content, db) };
-
-  return error(500, writeResult.error);
+  return redirect(302, `/create/${params.title}`);
 };
-
-function makeDefaultArticle(title: string) {
-  return dedent(`\
-  ---
-
-  ---
-
-  # ${title}
-
-  > [!tip]
-  > This article is an automatically generated stub. Go to the [editor](/edit/${encodeURIComponent(title)}) to add content.
-  `);
-}

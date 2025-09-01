@@ -1,11 +1,11 @@
 import { applyPatch } from "diff";
 import fs from "node:fs/promises";
 import type { DBResult } from "./result";
-import { EAE_DATA_DIR } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 
 type FSResult<E extends string> = DBResult<{ content: string }, E>;
 
-const basePath = EAE_DATA_DIR;
+const basePath = env.EAE_DATA_DIR;
 
 function getFilePath(name: string) {
   return `${basePath}/articles/${encodeURIComponent(name)}.md`;

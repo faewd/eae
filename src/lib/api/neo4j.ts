@@ -1,6 +1,7 @@
 import type { Article } from "$lib/article/types";
 import neo4j, { Integer, type Driver } from "neo4j-driver";
 import type { DBResult } from "./result";
+import type { User } from "./auth";
 
 type N4jResult<E extends string> = DBResult<Record<never, never>, E>;
 
@@ -305,4 +306,29 @@ export async function getPinsForMap(map: string) {
     coords: r.get("coords"),
     type: r.get("type"),
   }));
+}
+
+export async function upsertUser(name: User["name"], icon: User["icon"]): Promise<User> {
+  const driver = await ensureDriver();
+  const { records } = await driver.executeQuery(
+    `//cypher
+      MERGE (u:User { name: $user.name })
+      ON MATCH SET u += $user
+      ON CREATE SET u = $user, u.isAdmin = false
+      RETURN u.name as name, u.icon as icon, u.isAdmin as isAdmin
+    `,
+    { user: { name, icon } },
+    { database: "neo4j" },
+  );
+
+  if (records.length !== 1) {
+    throw Error(`Failed to update user "${name}": Expected 1 node, got ${records.length}.`);
+  }
+
+  const r = records[0];
+  return {
+    name: r.get("name"),
+    icon: r.get("icon"),
+    isAdmin: r.get("isAdmin"),
+  };
 }

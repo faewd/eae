@@ -3,7 +3,8 @@
   import Page from "$lib/components/Page.svelte";
   import type { PageProps } from "./$types";
 
-  let { data: article }: PageProps = $props();
+  let { data }: PageProps = $props();
+  let { user, article } = data;
 </script>
 
 <svelte:head>
@@ -11,5 +12,5 @@
 </svelte:head>
 
 <Page>
-  <ArticleView {article} searchbar editable />
+  <ArticleView {article} searchbar editable={user?.isAdmin} />
 </Page>

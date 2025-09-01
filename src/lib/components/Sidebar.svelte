@@ -1,10 +1,13 @@
-<script>
+<script lang="ts">
   import {
     BookMarked,
     BowArrow,
     Calendar,
+    Crown,
     Flag,
     House,
+    LogIn,
+    LogOut,
     MapPin,
     MapPinned,
     PanelLeftClose,
@@ -18,8 +21,15 @@
   import cx from "$lib/utils/cx";
   import { beforeNavigate } from "$app/navigation";
   import NavLink from "./NavLink.svelte";
+  import type { User } from "$lib/api/auth";
 
   let visible = $state(false);
+
+  interface Props {
+    user: User | null;
+  }
+
+  const { user }: Props = $props();
 
   beforeNavigate(() => {
     visible = false;
@@ -39,11 +49,13 @@
       },
     )}
   >
-    <header>
-      <h2 class="mb-4 flex items-center justify-between text-2xl font-bold">
-        <span class="font-heading text-4xl text-ice-300">Æ</span>
-        Menu
-      </h2>
+    <div class="-mr-2 flex h-full flex-col overflow-y-auto pr-4">
+      <header>
+        <h2 class="mb-4 flex items-center justify-between text-2xl font-bold">
+          <span class="font-heading text-4xl text-ice-300">Æ</span>
+          Menu
+        </h2>
+      </header>
       <SearchBar inputClass="bg-zinc-800" />
       <section class="mt-4">
         <ul class="flex flex-col gap-2">
@@ -129,7 +141,34 @@
           </li>
         </ul>
       </section>
-    </header>
+      <section class="mt-auto pt-8">
+        {#if user === null}
+          <div class="flex justify-end">
+            <button
+              onclick={() => (window.location.href = "/auth/login")}
+              class="flex cursor-pointer gap-2 rounded bg-ice-900 px-3 py-2 font-bold text-ice-200 transition-colors hover:bg-ice-800 hover:text-ice-100"
+            >
+              <LogIn />
+              Login
+            </button>
+          </div>
+        {:else}
+          <div class="relative flex items-center gap-3">
+            <img src={user.icon} alt="Your GitHub profile pic" class="h-8 w-8 rounded-sm" />
+            <span class="font-bold">{user.name}</span>
+            {#if user.isAdmin}
+              <Crown class="-mt-[3px] w-5 text-amber-400/50" />
+            {/if}
+            <button
+              class="ml-auto cursor-pointer rounded bg-rose-900 p-1 text-rose-200 transition-colors hover:bg-rose-800 hover:text-rose-100"
+              onclick={() => (window.location.href = "/auth/logout")}
+            >
+              <LogOut />
+            </button>
+          </div>
+        {/if}
+      </section>
+    </div>
 
     <button
       class="absolute top-0 -right-12 flex size-12 cursor-pointer items-center justify-center rounded-br bg-zinc-950 text-ice-300 transition-colors hover:bg-ice-950"

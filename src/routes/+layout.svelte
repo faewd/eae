@@ -3,7 +3,7 @@
   import favicon from "$lib/assets/favicon.svg";
   import Sidebar from "$lib/components/Sidebar.svelte";
 
-  let { children } = $props();
+  let { children, data } = $props();
 </script>
 
 <svelte:head>
@@ -11,5 +11,5 @@
   <title>Auriin Wiki</title>
 </svelte:head>
 
-<Sidebar />
+<Sidebar user={data.user} />
 {@render children?.()}

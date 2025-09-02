@@ -8,7 +8,6 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
-  <title>Auriin Wiki</title>
 </svelte:head>
 
 <Sidebar user={data.user} />

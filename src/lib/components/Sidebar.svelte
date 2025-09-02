@@ -37,13 +37,13 @@
 </script>
 
 <aside
-  class={cx("pointer-events-none fixed z-[2000] h-screen w-screen transition-all", {
+  class={cx("pointer-events-none fixed z-[2000] h-dvh w-screen transition-all", {
     "bg-zinc-900/20 backdrop-blur": visible,
   })}
 >
   <div
     class={cx(
-      "pointer-events-auto relative top-0 h-screen w-fit -translate-x-full bg-zinc-950 p-4 transition-transform",
+      "pointer-events-auto relative top-0 h-dvh w-fit -translate-x-full bg-zinc-950 p-4 transition-transform",
       {
         "translate-x-0": visible,
       },
@@ -171,7 +171,7 @@
     </div>
 
     <button
-      class="absolute -right-12 bottom-0 flex size-12 cursor-pointer items-center justify-center rounded-br bg-zinc-950 text-ice-300 transition-colors hover:bg-ice-950 lg:top-0"
+      class="fixed -right-12 bottom-0 flex size-12 cursor-pointer items-center justify-center rounded-tr bg-zinc-950 text-ice-300 transition-colors hover:bg-ice-950 lg:absolute lg:top-0 lg:rounded-tr-none lg:rounded-br"
       onclick={() => (visible = !visible)}
     >
       <div class="relative size-6">

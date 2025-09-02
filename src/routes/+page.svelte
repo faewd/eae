@@ -3,11 +3,15 @@
   import enna from "$lib/assets/Enna Berevian.png";
 </script>
 
-<main class="flex h-screen max-h-full items-center justify-center">
-  <div class="flex flex-col-reverse items-center gap-8 p-4 sm:p-10 lg:flex-row">
+<svelte:head>
+  <title>Auriin Wiki</title>
+</svelte:head>
+
+<main class="flex h-screen max-h-full items-start justify-center pt-4 lg:items-center lg:pt-0">
+  <div class="flex flex-col-reverse items-center gap-8 p-2 sm:p-10 lg:flex-row">
     <div class="prose flex-1 flex-shrink text-center prose-zinc prose-invert">
       <h1
-        class="sm:mv-3 mb-2 font-heading text-[3rem] font-normal text-ice-300 sm:text-[4rem] xl:mb-4 xl:text-[5rem]"
+        class="sm:mv-3 mb-2 font-heading text-[2.5rem] font-normal text-ice-300 sm:text-[4rem] xl:mb-4 xl:text-[5rem]"
       >
         Enna's&nbsp;Auriinic<br />Encyclopædia
       </h1>
@@ -30,7 +34,7 @@
     <img
       src={enna}
       alt="Enna Berevian, dressed in a heavy fur cloak, decorative hunting gear, and wielding a bow. She is weeping."
-      class="h-100 lg:h-[unset] lg:max-h-[70vh] xl:max-h-[80vh]"
+      class="h-80 lg:h-[unset] lg:max-h-[70vh] xl:max-h-[80vh]"
     />
   </div>
 </main>

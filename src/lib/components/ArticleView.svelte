@@ -22,10 +22,12 @@
     props.class,
   )}
 >
-  <header class="flex flex-col-reverse items-end justify-between gap-4 lg:flex-row lg:items-start">
+  <header
+    class="flex flex-col-reverse items-end justify-between gap-6 lg:flex-row lg:items-start lg:gap-4"
+  >
     <h1 class="!m-0 inline-block">{article.title}</h1>
     {#if searchbar}
-      <SearchBar class="max-w-[calc(100%-12*var(--spacing))] lg:max-w-1/2" />
+      <SearchBar class={cx("lg:max-w-1/2", { "max-w-[calc(100%-12*var(--spacing))]": editable })} />
     {/if}
   </header>
 
@@ -41,7 +43,7 @@
   <section>
     {#if article.metadata.infobox}
       <aside
-        class="not-prose float-right clear-both mt-2 ml-4 grid w-72 grid-cols-[repeat(2,auto)] gap-2 rounded bg-zinc-950 p-2"
+        class="not-prose clear-both mt-2 grid grid-cols-[repeat(2,auto)] gap-2 rounded bg-zinc-950 p-2 lg:float-right lg:ml-4 lg:w-72"
       >
         <h2
           class="col-span-2 rounded bg-zinc-900 px-4 py-1 text-center font-heading text-xl font-bold text-ice-300"
@@ -73,9 +75,11 @@
               </ul>
             {/if}
           {:else if item.kind === "image"}
-            <img class="col-span-2 w-100 rounded" src={item.src} alt={item.alt} />
-            <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-            <p class="col-span-2 text-center text-zinc-500 italic">{@html item.caption}</p>
+            <div class="col-span-2 flex flex-col items-center">
+              <img class="w-100 rounded" src={item.src} alt={item.alt} />
+              <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+              <p class="text-center text-zinc-500 italic">{@html item.caption}</p>
+            </div>
           {/if}
         {/each}
       </aside>
@@ -92,12 +96,12 @@
         Tags
       </h2>
       {#if article.metadata.tags.length > 0}
-        <ul class="not-prose flex gap-2">
+        <ul class="not-prose flex flex-wrap gap-2">
           {#each article.metadata.tags.toSorted() as tag, i (i + tag)}
             <li>
               <a
                 href="/tag/{tag}"
-                class="rounded bg-zinc-800 px-2 py-1 font-bold text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-zinc-300 hover:underline"
+                class="rounded bg-zinc-800 px-2 py-1 font-bold whitespace-nowrap text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-zinc-300 hover:underline"
               >
                 {tag}
               </a>
@@ -109,11 +113,17 @@
       {/if}
     </section>
     <section>
-      <h2 class="!mb-3 flex items-center gap-2 !border-b-zinc-700 !text-zinc-500">
+      <h2 class="!mb-3 flex w-full items-center gap-2 !border-b-zinc-700 !text-zinc-500">
         <Braces />
         Metadata
       </h2>
-      <code><pre class="mt-0 text-zinc-500">{JSON.stringify(article.metadata, null, 2)}</pre></code>
+      <code>
+        <pre class="mt-0 max-w-[calc(100vw-12*var(--spacing))] text-zinc-500">{JSON.stringify(
+            article.metadata,
+            null,
+            2,
+          )}</pre>
+      </code>
     </section>
   </footer>
 </article>

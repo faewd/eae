@@ -101,19 +101,21 @@ const EMBEDS: Embed[] = [
       const articles = await db.fetchByTag(tag);
       const articlesHtml = articles
         .map(
-          ({ title }) => dedent`
+          ({ title, summary }) => dedent`
           <li>
-            <a href="/wiki/${encodeURIComponent(title)}">
-              <article
-                class="group flex justify-between rounded bg-zinc-800 p-2 transition-colors hover:bg-zinc-700"
-              >
-                <h3 class="font-heading font-bold text-ice-200 group-hover:text-ice-100">
+            <a
+              href="/wiki/${encodeURIComponent(title)}"
+              class="group flex items-center gap-2 rounded bg-zinc-900 px-4 py-3 font-bold transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+            >
+              <article>
+                <h3 class="font-heading text-lg font-bold text-ice-200 group-hover:text-ice-100">
                   ${title}
                 </h3>
-                <span class="translate-x-3 text-ice-300 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100">
-                  ${ArrowRight}
-                </span>
+                ${summary ? `<p class="font-normal text-zinc-400 italic leading-5">${summary}</p>` : ""}
               </article>
+              <span class="translate-x-3 ml-auto text-ice-300 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100">
+                ${ArrowRight}
+              </span>
             </a>
           </li>
         `,

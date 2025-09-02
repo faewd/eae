@@ -69,7 +69,12 @@ export async function mergeIntoGraph(
       `,
         {
           title: oldName ?? article.title,
-          article: { title: article.title, content: article.content, placeholder: false },
+          article: {
+            title: article.title,
+            summary: article.metadata.summary,
+            content: article.content,
+            placeholder: false,
+          },
         },
       );
 
@@ -156,7 +161,11 @@ export async function mergeIntoGraph(
         `,
         {
           article,
-          pins: article.metadata.pins.map((p) => ({ ...p, label: p.label ?? article.title })),
+          pins: article.metadata.pins.map((p) => ({
+            ...p,
+            label: p.label ?? article.title,
+            desc: p.desc ?? article.metadata.summary,
+          })),
         },
       );
     });
@@ -186,13 +195,13 @@ export async function removeFromGraph(title: string) {
   );
 }
 
-export async function searchArticles(query: string): Promise<{ title: string }[]> {
+export async function searchArticles(query: string) {
   const driver = await ensureDriver();
   const { records } = await driver.executeQuery(
     `//cypher
       CALL db.index.fulltext.queryNodes("article_text_idx", $query) YIELD node
       WHERE node.placeholder = false
-      RETURN node.title as title
+      RETURN node.title as title, node.summary as summary
     `,
     {
       query: query
@@ -204,6 +213,7 @@ export async function searchArticles(query: string): Promise<{ title: string }[]
   );
   return records.map((record) => ({
     title: record.get("title"),
+    summary: record.get("summary"),
   }));
 }
 
@@ -258,7 +268,7 @@ export async function fetchByTag(tag: string) {
       MATCH (t:Tag) WHERE t.label = $tag
       MATCH (a:Article) WHERE (t)-[:APPLIES_TO]->(a)
       ORDER BY a.title ASC
-      RETURN a.title as title
+      RETURN a.title as title, a.summary as summary
     `,
     { tag },
     { database },
@@ -266,6 +276,7 @@ export async function fetchByTag(tag: string) {
 
   return records.map((record) => ({
     title: record.get("title"),
+    summary: record.get("summary"),
   }));
 }
 

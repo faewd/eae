@@ -16,6 +16,7 @@ export type PinType = MapPin["type"];
 
 const ArticleMetadataSchema = z.object({
   tags: z.array(z.string()),
+  summary: z.optional(z.string()),
   infobox: z.optional(InfoboxSchema),
   pins: z.array(MapPinSchema),
 });

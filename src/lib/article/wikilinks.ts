@@ -4,7 +4,7 @@ import type { RuleCore } from "markdown-it/lib/parser_core.mjs";
 import type { Link } from "./types";
 
 const SPLIT_PATTERN = /(\[\[[^[\]|]+(?:\|[^[\]]+)?\]\])/g;
-const MATCH_PATTERN = /\[\[(?<title>[^[\]|]+)(?:\|(?<label>[^[\]]+))?\]\]/g;
+const MATCH_PATTERN = /\[\[(?<title>[^[\]|#]+)(?<hash>#[^[\]|]+)?(?:\|(?<label>[^[\]]+))?\]\]/g;
 
 const TOKEN_NAME = "wikilink";
 const LINK_CLASS = "text-ice-300 no-underline hover:underline hover:text-ice-200";
@@ -50,6 +50,7 @@ const coreRule: RuleCore = (state) => {
           newToken.content = item.content;
           if (item.type === TOKEN_NAME) {
             newToken.attrSet("title", item.attrs!.title);
+            newToken.attrSet("hash", item.attrs!.hash);
             newToken.attrSet("label", item.attrs!.label);
           }
           return newToken;
@@ -61,9 +62,11 @@ const coreRule: RuleCore = (state) => {
 
 const renderer: (opts: Options) => Renderer.RenderRule = (opts) => (tokens, idx) => {
   const title = tokens[idx].attrGet("title")!;
+  const hash = tokens[idx].attrGet("hash") ?? null;
   const label = tokens[idx].attrGet("label") ?? title;
   opts.collector({ title, label });
-  if (opts.isClient) return `<a href="${opts.prefix}${title}" class="${LINK_CLASS}">${label}</a>`;
+  if (opts.isClient)
+    return `<a href="${opts.prefix}${title}${hash}" class="${LINK_CLASS}">${label}</a>`;
 
   let id: string;
   do {

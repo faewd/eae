@@ -66,7 +66,7 @@ const renderer: (opts: Options) => Renderer.RenderRule = (opts) => (tokens, idx)
   const label = tokens[idx].attrGet("label") ?? title;
   opts.collector({ title, label });
   if (opts.isClient)
-    return `<a href="${opts.prefix}${title}${hash}" class="${LINK_CLASS}">${label}</a>`;
+    return `<a href="${opts.prefix}${title}${hash ?? ""}" class="${LINK_CLASS}">${label}</a>`;
 
   let id: string;
   do {

@@ -1,6 +1,10 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import CreateArticleButton from "$lib/components/CreateArticleButton.svelte";
   import SearchBar from "$lib/components/SearchBar.svelte";
+  import type { PageProps } from "./$types";
+
+  let { data }: PageProps = $props();
 </script>
 
 <main class="flex justify-center">
@@ -14,6 +18,11 @@
           Can't find what you're looking for? Try searching for it:
         </p>
         <SearchBar />
+
+        {#if page.url.pathname.startsWith("/wiki") && data.user?.isAdmin}
+          <p class="mt-8 mb-4">Or, create the article now:</p>
+          <CreateArticleButton title={page.url.pathname.substring(5)} />
+        {/if}
       {/if}
     {/if}
   </div>

@@ -179,8 +179,18 @@
   :global(#map[data-zoom="2"] .dot-pin > div) {
     width: 0.3rem;
     height: 0.3rem;
-    opacity: 0.8;
+    opacity: 0.7;
     border-radius: 100%;
+  }
+
+  :global(#map[data-zoom="2"] .dot-pin.pin-capital > div) {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+
+  :global(#map[data-zoom="2"] .dot-pin.pin-city > div) {
+    width: 0.4rem;
+    height: 0.4rem;
   }
 
   :global(.pin-capital > div) {
@@ -207,6 +217,13 @@
     width: 0.5rem;
     height: 0.5rem;
     background-color: var(--color-amber-800);
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  :global(.pin-ruin > div) {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: var(--color-stone-900);
     transform: translate(-50%, -50%) rotate(45deg);
   }
 </style>

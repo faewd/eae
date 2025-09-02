@@ -19,9 +19,9 @@
         </p>
         <SearchBar />
 
-        {#if page.url.pathname.startsWith("/wiki") && data.user?.isAdmin}
+        {#if page.url.pathname.startsWith("/wiki/") && data.user?.isAdmin}
           <p class="mt-8 mb-4">Or, create the article now:</p>
-          <CreateArticleButton title={page.url.pathname.substring(5)} />
+          <CreateArticleButton title={page.url.pathname.substring(6)} />
         {/if}
       {/if}
     {/if}

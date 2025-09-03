@@ -21,7 +21,7 @@
 
         {#if page.url.pathname.startsWith("/wiki/") && data.user?.isAdmin}
           <p class="mt-8 mb-4">Or, create the article now:</p>
-          <CreateArticleButton title={page.url.pathname.substring(6)} />
+          <CreateArticleButton title={decodeURIComponent(page.url.pathname.substring(6))} />
         {/if}
       {/if}
     {/if}

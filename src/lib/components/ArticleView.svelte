@@ -64,8 +64,10 @@
           {:else if item.kind === "list"}
             <span class="font-bold">{item.label}</span>
             {#if item.delimited}
-              <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-              <span>{@html item.items.join(item.items.some(/[,-]/.test) ? ";" : ":")}</span>
+              <span>
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+                {@html item.items.join(item.items.some((s) => /[,-]/.test(s)) ? ";" : ":")}
+              </span>
             {:else}
               <ul>
                 {#each item.items as listItem, i (i)}

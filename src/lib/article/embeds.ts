@@ -72,29 +72,42 @@ const renderer: (options: EmbedOptions) => Renderer.RenderRule = (opts) => (toke
   const tok = tokens[idx] as unknown as { embedName: string; embedArgs: string[] };
   const embed = EMBEDS.find((e) => e.name === tok.embedName);
   if (embed === undefined) return `INVALID EMBED ${tok.embedName}`;
+  if (embed.isClient) return embed.render(tok.embedArgs);
   if (opts.isClient)
     return dedent`
       <section class="not-prose bg-ice-300/10 rounded p-4 flex gap-4 items-center text-ice-600 italic">
         ${Info}
-        <p>Embeds aren't rendered in previews.</p>
+        <p>Server-side embeds aren't rendered in previews.</p>
       </section>
     `;
   let id: string;
+  const embedResult = embed.render(opts.db, tok.embedArgs);
+  if (typeof embedResult === "string") return embedResult;
   do {
     id = (Math.random() + 1).toString(36).substring(2, 9);
   } while (opts.contentPromises.has(id));
-  opts.contentPromises.set(id, Promise.resolve(embed.render(opts.db, tok.embedArgs)));
+  opts.contentPromises.set(id, embedResult);
   return `{%${id}%}`;
 };
 
-interface Embed {
+type Embed = ServerEmbed | ClientEmbed;
+
+interface ServerEmbed {
   name: string;
+  isClient: false;
   render(db: NonNullable<EmbedOptions["db"]>, args: string[]): string | Promise<string>;
+}
+
+interface ClientEmbed {
+  name: string;
+  isClient: true;
+  render(args: string[]): string;
 }
 
 const EMBEDS: Embed[] = [
   {
     name: "articles",
+    isClient: false,
     async render(db, args) {
       const tag = args[0];
       const heading = args[1] ?? `Articles Tagged with: ${tag}`;
@@ -129,6 +142,13 @@ const EMBEDS: Embed[] = [
           </ul>
         </section>
       `;
+    },
+  },
+  {
+    name: "clear",
+    isClient: true,
+    render() {
+      return `<p style="clear: both;"></p>`;
     },
   },
 ];

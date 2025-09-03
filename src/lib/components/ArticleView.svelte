@@ -66,7 +66,7 @@
             {#if item.delimited}
               <span>
                 <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-                {@html item.items.join(item.items.some((s) => /[,-]/.test(s)) ? ";" : ":")}
+                {@html item.items.join(item.items.some((s) => /[,-]/.test(s)) ? "; " : ", ")}
               </span>
             {:else}
               <ul>

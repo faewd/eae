@@ -43,7 +43,7 @@
   <section class="article-content">
     {#if article.metadata.infobox}
       <aside
-        class="not-prose clear-both mt-2 grid grid-cols-[repeat(2,auto)] gap-2 rounded bg-zinc-950 p-2 lg:float-right lg:ml-4 lg:max-w-1/2"
+        class="not-prose clear-both mt-2 mb-4 grid grid-cols-[repeat(2,auto)] gap-2 rounded bg-zinc-950 p-2 lg:float-right lg:ml-4 lg:max-w-1/2"
       >
         <h2
           class="col-span-2 rounded bg-zinc-900 px-4 py-1 text-center font-heading text-xl font-bold text-ice-300"

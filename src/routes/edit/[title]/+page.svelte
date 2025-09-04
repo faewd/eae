@@ -221,10 +221,10 @@
       bind:this={editor}
       bind:value
       errors={parsingErrors}
-      class={showPreview && "w-1/2"}
+      class={showPreview && "lg:w-1/2"}
       onsave={saveArticle}
     ></MonacoEditor>
-    <div class={cx("w-1/2 overflow-y-scroll", { hidden: !showPreview })}>
+    <div class={cx("hidden w-1/2 overflow-y-scroll lg:block", { hidden: !showPreview })}>
       {#if preview !== null}
         <ArticleView article={preview} />
       {:else}
@@ -243,7 +243,7 @@
         </div>
       {/if}
     </div>
-    <div class="absolute right-4 bottom-4">
+    <div class="absolute right-4 bottom-4 hidden lg:block">
       <button
         onclick={() => (showPreview = !showPreview)}
         class="relative z-100 cursor-pointer rounded-sm bg-ice-900 p-1 text-ice-300 transition-colors hover:bg-ice-800"

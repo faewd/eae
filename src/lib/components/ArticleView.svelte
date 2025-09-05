@@ -5,6 +5,9 @@
   import "@mdit/plugin-alert/style";
   import SearchBar from "./SearchBar.svelte";
   import { Braces, Pencil, Tags } from "@lucide/svelte";
+  import { Document, stringify, type YAMLMap, type YAMLSeq } from "yaml";
+  import loader from "@monaco-editor/loader";
+  import themeIceDark from "$lib/editor/theme-ice-dark";
 
   interface Props {
     article: Article;
@@ -14,6 +17,26 @@
   }
 
   let { article, searchbar, editable, ...props }: Props = $props();
+  let mdPreview: HTMLPreElement;
+  let metaYaml = $derived.by(() => {
+    const md = new Document(article.metadata);
+    const tags = md.get("tags") as YAMLSeq;
+    if (tags) tags.flow = true;
+    const pins = md.get("pins") as YAMLSeq;
+    pins?.items.forEach((item) => (((item as YAMLMap).get("coords") as YAMLSeq).flow = true));
+    return md;
+  });
+
+  $effect(() => {
+    if (metaYaml) {
+      import("monaco-editor").then(async (monacoEditor) => {
+        loader.config({ monaco: monacoEditor.default });
+        const monaco = await loader.init();
+        monaco.editor.defineTheme("ice-dark", themeIceDark);
+        monaco.editor.colorizeElement(mdPreview, { theme: "ice-dark" });
+      });
+    }
+  });
 </script>
 
 <article
@@ -120,13 +143,21 @@
         <Braces />
         Metadata
       </h2>
-      <code>
-        <pre class="mt-0 max-w-[calc(100vw-12*var(--spacing))] text-zinc-500">{JSON.stringify(
-            article.metadata,
-            null,
-            2,
-          )}</pre>
-      </code>
+      <details>
+        <summary
+          class="mb-2 cursor-pointer text-zinc-400 italic transition-colors hover:text-zinc-300"
+        >
+          Reveal metadata
+        </summary>
+        <code>
+          <pre
+            bind:this={mdPreview}
+            class="mt-0 max-w-[calc(100vw-12*var(--spacing))] text-base text-zinc-500"
+            data-lang="yaml">{stringify(metaYaml, {
+              flowCollectionPadding: false,
+            })}</pre>
+        </code>
+      </details>
     </section>
   </footer>
 </article>

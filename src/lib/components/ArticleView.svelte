@@ -4,7 +4,18 @@
   import type { ClassValue } from "clsx";
   import "@mdit/plugin-alert/style";
   import SearchBar from "./SearchBar.svelte";
-  import { Braces, Pencil, Tags } from "@lucide/svelte";
+  import {
+    Braces,
+    Building2,
+    Castle,
+    Eye,
+    House,
+    Landmark,
+    MapPin,
+    Pencil,
+    Tag,
+    Tags,
+  } from "@lucide/svelte";
   import { Document, stringify, type YAMLMap, type YAMLSeq } from "yaml";
   import loader from "@monaco-editor/loader";
   import themeIceDark from "$lib/editor/theme-ice-dark";
@@ -117,7 +128,7 @@
 
   <footer class="mt-auto w-full">
     <section>
-      <h2 class="!mb-3 flex items-center gap-2 !border-b-zinc-700 !text-zinc-500">
+      <h2 class="!mb-3 flex items-center gap-2 !border-b-zinc-600 !text-zinc-400">
         <Tags />
         Tags
       </h2>
@@ -127,7 +138,7 @@
             <li>
               <a
                 href="/tag/{tag}"
-                class="rounded bg-zinc-800 px-2 py-1 font-bold whitespace-nowrap text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-zinc-300 hover:underline"
+                class="rounded bg-zinc-950 px-2 py-1 font-bold whitespace-nowrap text-ice-200 transition-colors hover:bg-ice-900 hover:text-ice-100 hover:underline"
               >
                 {tag}
               </a>
@@ -138,8 +149,38 @@
         <p class="text-zinc-400 italic">This article is untagged.</p>
       {/if}
     </section>
+    {#if article.metadata.pins.length > 0}
+      <section>
+        <h2 class="!mb-3 flex items-center gap-2 !border-b-zinc-600 !text-zinc-400">
+          <MapPin />
+          Map Pins
+        </h2>
+        <ul class="not-prose flex gap-2">
+          {#each article.metadata.pins as pin, i (i)}
+            <li class="rounded bg-zinc-950 px-2 py-1 font-bold text-ice-200">
+              <div class="flex items-center gap-2">
+                {#if ["region", "domain", "zone"].includes(pin.type)}
+                  <Tag />
+                {:else if pin.type === "capital"}
+                  <Castle />
+                {:else if pin.type === "city"}
+                  <Building2 />
+                {:else if pin.type === "town"}
+                  <House />
+                {:else if pin.type === "poi"}
+                  <Eye />
+                {:else if pin.type === "ruin"}
+                  <Landmark />
+                {/if}
+                <h3>{pin.label ?? article.title}</h3>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
     <section>
-      <h2 class="!mb-3 flex w-full items-center gap-2 !border-b-zinc-700 !text-zinc-500">
+      <h2 class="!mb-3 flex w-full items-center gap-2 !border-b-zinc-600 !text-zinc-400">
         <Braces />
         Metadata
       </h2>

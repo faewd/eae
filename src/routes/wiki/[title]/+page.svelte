@@ -5,12 +5,19 @@
 
   let { data }: PageProps = $props();
   let { user, article } = $derived(data);
+
+  let page: Page;
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    article;
+    page.resetScroll();
+  });
 </script>
 
 <svelte:head>
   <title>{article.title}</title>
 </svelte:head>
 
-<Page>
+<Page bind:this={page}>
   <ArticleView {article} searchbar editable={user?.isAdmin} />
 </Page>

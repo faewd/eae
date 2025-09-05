@@ -7,7 +7,8 @@ const SPLIT_PATTERN = /(\[\[[^[\]|]+(?:\|[^[\]]+)?\]\])/g;
 const MATCH_PATTERN = /\[\[(?<title>[^[\]|#]+)(?<hash>#[^[\]|]+)?(?:\|(?<label>[^[\]]+))?\]\]/g;
 
 const TOKEN_NAME = "wikilink";
-const LINK_CLASS = "text-ice-300 no-underline hover:underline hover:text-ice-200";
+const LINK_CLASS = "wikilink";
+const NOT_FOUND_CLASS = "not-found";
 
 export type Options = {
   prefix: string;
@@ -77,9 +78,9 @@ const renderer: (opts: Options) => Renderer.RenderRule = (opts) => (tokens, idx)
     .getArticle(title)
     .then((res) => res.ok)
     .catch(() => false)
-    .then((exists) => (exists ? "" : " !text-rose-300"));
+    .then((exists) => (exists ? "" : " " + NOT_FOUND_CLASS));
 
   opts.contentPromises.set(id, linkColor);
 
-  return `<a href="${opts.prefix}${title}" class="${LINK_CLASS}{%${id}%}">${label}</a>`;
+  return `<a href="${opts.prefix}${encodeURIComponent(title)}" class="${LINK_CLASS}{%${id}%}">${label}</a>`;
 };

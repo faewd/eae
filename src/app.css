@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Spectral+SC:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Spectral+SC:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+@import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-html, body {
+html,
+body {
   @apply bg-zinc-900 text-zinc-300;
   margin: 0;
 
@@ -15,16 +16,24 @@ html, body {
   --font-mono: "Google Sans Code", monospace;
   --font-heading: "Spectral SC", "Merriweather", serif;
 
-  --color-ice-50:  #DAEEF0;
-  --color-ice-100: #C4E5EC;
-  --color-ice-200: #ADDCE7;
-  --color-ice-300: #96D3E3;
-  --color-ice-400: #7FC9DE;
-  --color-ice-500: #72B8CB;
-  --color-ice-600: #65A7B7;
-  --color-ice-700: #4A858F;
-  --color-ice-800: #2F6368;
+  --color-ice-50: #daeef0;
+  --color-ice-100: #c4e5ec;
+  --color-ice-200: #addce7;
+  --color-ice-300: #96d3e3;
+  --color-ice-400: #7fc9de;
+  --color-ice-500: #72b8cb;
+  --color-ice-600: #65a7b7;
+  --color-ice-700: #4a858f;
+  --color-ice-800: #2f6368;
   --color-ice-900: #144040;
   --color-ice-900: #0c2b2b;
   --color-ice-950: #051c1c;
+}
+
+a.wikilink {
+  @apply text-ice-300 no-underline hover:text-ice-200 hover:underline;
+
+  &.not-found {
+    @apply !text-rose-300;
+  }
 }

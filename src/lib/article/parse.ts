@@ -5,6 +5,7 @@ import type { Article, Link } from "./types";
 import { pluginWikilinks } from "./wikilinks";
 import { pluginEmbed } from "./embeds";
 import { parseMetadata, type ArticleMetadata } from "./metadata";
+import { pluginAnchors } from "./anchors";
 
 export type Span = { offset: number; length: number };
 
@@ -37,7 +38,8 @@ function createMarkdownParser(
       contentPromises,
       isClient: db === undefined,
       db,
-    });
+    })
+    .use(pluginAnchors);
 }
 
 export async function parse(
@@ -55,7 +57,7 @@ export async function parse(
   const metadataRaw = parseMetadata(frontmatter?.meta);
   const metadata = await renderMetadata(metadataRaw, md, contentPromises);
   const content = await fulfilContentPromises(
-    md.render(source).replace(/<h1>[^<]+<\/h1>/g, ""),
+    md.render(source).replace(/<h1[^>]+>[^<]+<\/h1>/g, ""),
     contentPromises,
   );
 

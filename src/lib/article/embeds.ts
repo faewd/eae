@@ -112,7 +112,7 @@ const EMBEDS: Embed[] = [
       const tag = args[0];
       const heading = args[1] ?? `Articles Tagged with: ${tag}`;
       const articles = await db.fetchByTag(tag);
-      const articlesHtml = articles
+      const articlesItems = articles
         .map(
           ({ title, summary }) => dedent`
           <li>
@@ -134,12 +134,18 @@ const EMBEDS: Embed[] = [
         `,
         )
         .join("\n");
+      const articlesHtml =
+        articles.length > 0
+          ? dedent`
+              <ul class="flex flex-col items-stretch gap-2 mt-3">
+                ${articlesItems}
+              </ul>
+            `
+          : `<p class="text-zinc-400 italic">No articles match the criteria.</p>`;
       return dedent`
         <section class="not-prose bg-zinc-950 rounded p-4">
           <h1 class="text-2xl font-bold font-heading text-ice-500">${heading}</h1>
-          <ul class="flex flex-col items-stretch gap-2 mt-3">
-            ${articlesHtml}
-          </ul>
+          ${articlesHtml}
         </section>
       `;
     },

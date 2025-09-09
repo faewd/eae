@@ -168,6 +168,34 @@ export async function mergeIntoGraph(
           })),
         },
       );
+
+      // Delete any events associated with this article
+      await tx.run(
+        `//cypher
+          MATCH (a:Article {title: $article.title})
+          MATCH (e:TimelineEvent) WHERE (e)-[:RELATES_TO]->(a)
+          DETACH DELETE e;
+        `,
+        { article }
+      )
+
+      // Create events for this article
+      await tx.run(
+        `//cypher
+          MATCH (a:Article {title: $article.title})
+          WITH a
+          UNWIND $events as event
+          CREATE (e:TimelineEvent)-[:RELATES_TO]->(a)
+          SET e = event
+        `,
+        {
+          article,
+          events: article.metadata.events.map((e) => {
+            const [era, year] = e.time.split("e").map(n => parseInt(n, 10))
+            return { ...e, era, year }
+          }),
+        }
+      )
     });
 
     return { ok: true };
@@ -319,6 +347,29 @@ export async function getPinsForMap(map: string) {
     desc: r.get("desc"),
     coords: r.get("coords"),
     type: r.get("type"),
+  }));
+}
+
+export async function getEvents(limit: number = 1000, offset: number = 0) {
+  const driver = await ensureDriver();
+  const { records } = await driver.executeQuery(
+    `//cypher
+      MATCH (e:TimelineEvent)
+      MATCH (a:Article) WHERE EXISTS { (e)-[:RELATES_TO]->(a) }
+      ORDER BY e.era, e.year
+      SKIP $offset
+      LIMIT $limit
+      RETURN e.label as label, e.era as era, e.year as year, e.desc as desc, a.title as article;
+    `,
+    { limit: new Integer(limit), offset: new Integer(offset) }
+  )
+
+  return records.map((r) => ({
+    label: r.get("label"),
+    era: r.get("era"),
+    year: r.get("year"),
+    desc: r.get("desc"),
+    article: r.get("article"),
   }));
 }
 

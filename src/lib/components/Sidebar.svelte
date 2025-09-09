@@ -13,6 +13,7 @@
     PanelLeftClose,
     PanelLeftOpen,
     PersonStanding,
+    Route,
     Sparkles,
     Tags,
     Users,
@@ -75,6 +76,12 @@
             <NavLink to="/map/Auriin">
               <MapPinned />
               World Map
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/timeline">
+              <Route />
+              Timeline
             </NavLink>
           </li>
         </ul>

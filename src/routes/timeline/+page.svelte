@@ -69,6 +69,10 @@
   });
 </script>
 
+<svelte:head>
+  <title>Timeline | Auriin Wiki</title>
+</svelte:head>
+
 <Page>
   <h1 class="font-heading text-4xl font-bold text-ice-300">Timeline</h1>
   <section class="mt-8 mb-8">
